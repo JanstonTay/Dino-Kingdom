@@ -35,16 +35,17 @@ module.exports.insertSingle = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 }
 
+
 module.exports.updateById = (data, callback) => {
 
     const SQLSTATEMENT = `
-    UPDATE User
-    SET username = ?, points = ?
-    WHERE user_id = ?;
+        UPDATE User
+        SET username = ?, points = ?
+        WHERE user_id = ?;
     `;
 
-  const VALUES = [data.username, data.points, data.user_id];
+    const VALUES = [data.username, data.points, data.user_id];
 
-  pool.query(SQLSTATEMENT, VALUES, callback);
-  
+    pool.query(SQLSTATEMENT, VALUES, callback);
+
 }
