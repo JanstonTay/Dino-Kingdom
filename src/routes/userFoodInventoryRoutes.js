@@ -7,6 +7,4 @@ router.get("/", controller.readAllUserFoodInventory);
 router.post("/", controller.createOrUpdateUserFoodInventory);
 router.delete("/", controller.deleteUserFoodInventoryItem);
 
-router.get("/:user_id", controller.readUserFoodInventoryByUserId);
-
 module.exports = router;

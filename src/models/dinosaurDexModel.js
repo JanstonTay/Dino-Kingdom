@@ -45,13 +45,7 @@ module.exports.updateByNumber = (data, callback) => {
         WHERE number = ?;
     `;
 
-    const VALUES = [
-        data.new_number,
-        data.name,
-        data.diet,
-        data.rarity,
-        data.old_number
-    ];
+    const VALUES = [data.new_number, data.name, data.diet, data.rarity, data.old_number];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };

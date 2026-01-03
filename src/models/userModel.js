@@ -23,6 +23,19 @@ module.exports.selectByUserId = (data, callback) => {
 }
 
 
+module.exports.selectByUsername = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        SELECT user_id, username, points FROM User
+        WHERE username = ?;
+    `;
+
+    const VALUES = [data.username];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+}
+
+
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `

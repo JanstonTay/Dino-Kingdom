@@ -1,41 +1,17 @@
-// src/models/dinosaurFeedModel.js
 const pool = require("../services/db");
 
-// ##############################################################
-// SELECT ALL FEED EVENTS
-// ##############################################################
-module.exports.selectAll = (callback) => {
+module.exports.selectAllDinosaurFeed = (callback) => {
 
     const SQLSTATEMENT = `
-        SELECT *
-        FROM DinosaurFeed
-        ORDER BY used_on DESC;
+        SELECT feed_id, dinosaur_id, food_type_id, quantity, used_on
+        FROM DinosaurFeed;
     `;
 
     pool.query(SQLSTATEMENT, callback);
 };
 
-// ##############################################################
-// SELECT FEED EVENTS BY DINOSAUR_ID
-// ##############################################################
-module.exports.selectByDinosaurId = (data, callback) => {
 
-    const SQLSTATEMENT = `
-        SELECT *
-        FROM DinosaurFeed
-        WHERE dinosaur_id = ?
-        ORDER BY used_on DESC;
-    `;
-
-    const VALUES = [data.dinosaur_id];
-
-    pool.query(SQLSTATEMENT, VALUES, callback);
-};
-
-// ##############################################################
-// INSERT ONE FEED EVENT
-// ##############################################################
-module.exports.insertSingle = (data, callback) => {
+module.exports.insertFeedEvent = (data, callback) => {
 
     const SQLSTATEMENT = `
         INSERT INTO DinosaurFeed (dinosaur_id, food_type_id, quantity, used_on)
@@ -47,4 +23,29 @@ module.exports.insertSingle = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
-console.log("dinosaurFeed model loaded");
+
+module.exports.selectFeedByDinosaurId = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        SELECT feed_id, dinosaur_id, food_type_id, quantity, used_on
+        FROM DinosaurFeed
+        WHERE dinosaur_id = ?;
+    `;
+
+    const VALUES = [data.dinosaur_id];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+};
+
+
+module.exports.deleteFeedById = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        DELETE FROM DinosaurFeed
+        WHERE feed_id = ?;
+    `;
+
+    const VALUES = [data.feed_id];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+};

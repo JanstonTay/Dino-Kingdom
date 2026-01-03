@@ -51,24 +51,39 @@ module.exports.createUser = (req, res) => {
         });
     }
 
-    userModel.insertSingle(data, (error, results) => {
+    const checkData = {
+        username: data.username
+    };
+
+    // First check if username already exists
+    userModel.selectByUsername(checkData, (error, results) => {
 
         if (error) {
-            if (error.code === "ER_DUP_ENTRY") {
-                return res.status(409).json({ message: "Username taken" });
-            } 
-            else {
-                return res.status(500).json(error);
-            }
-        } 
-        else {
-            return res.status(201).json({
-                user_id: results.insertId,
-                username: data.username,
-                points: 0
+            return res.status(500).json(error);
+        }
+
+        if (results.length > 0) {
+            // Someone already has this username
+            return res.status(409).json({
+                message: "Username taken"
             });
         }
 
+        // Safe to insert
+        userModel.insertSingle(data, (error2, results2) => {
+
+            if (error2) {
+                return res.status(500).json(error2);
+            } 
+            else {
+                return res.status(201).json({
+                    user_id: results2.insertId,
+                    username: data.username,
+                    points: 0
+                });
+            }
+
+        });
     });
 };
 
@@ -87,30 +102,56 @@ module.exports.updateUserById = (req, res) => {
         });
     }
 
-    userModel.updateById(data, (error, result) => {
+    const userIdData = {
+        user_id: data.user_id
+    };
+
+    // 1) Check that the user exists
+    userModel.selectByUserId(userIdData, (error, userResults) => {
 
         if (error) {
-
-            if (error.code === "ER_DUP_ENTRY") {
-                return res.status(409).json({
-                    message: "Username taken"
-                });
-            } 
-            else {
-                return res.status(500).json(error);
-            }
-
+            return res.status(500).json(error);
         }
-        else if (result.affectedRows === 0) {
+
+        if (userResults.length === 0) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
-        else {
-            return res.status(200).json({
-                message: "User updated successfully"
+
+        const checkData = {
+            username: data.username
+        };
+
+        // 2) Check if some *other* user already has this username
+        userModel.selectByUsername(checkData, (error2, usernameResults) => {
+
+            if (error2) {
+                return res.status(500).json(error2);
+            }
+
+            if (usernameResults.length > 0 && usernameResults[0].user_id != data.user_id) {
+                return res.status(409).json({
+                    message: "Username taken"
+                });
+            }
+
+            // 3) Safe to update
+            userModel.updateById(data, (error3, result) => {
+
+                if (error3) {
+                    return res.status(500).json(error3);
+                }
+
+                return res.status(200).json({
+                    user_id: Number(data.user_id),
+                    username: data.username,
+                    points: data.points
+                });
+
             });
-        }
+
+        });
 
     });
 };

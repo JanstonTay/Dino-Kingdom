@@ -1,4 +1,5 @@
 const wellnessChallengeModel = require("../models/wellnessChallengeModel.js");
+const userModel = require("../models/userModel.js");
 
 module.exports.checkChallengeBody = (req, res, next) => {
 
@@ -19,20 +20,43 @@ module.exports.createChallenge = (req, res, next) => {
         user_id: req.body.user_id,
         description: req.body.description,
         points: req.body.points
-    }
+    };
 
-    const callback = (error, results) => {
+    // 1) Check if creator (user) exists
+    const userData = {
+        user_id: data.user_id
+    };
+
+    const checkUserCallback = (error, results) => {
 
         if (error) {
-            console.error("Error insertChallenge:", error);
+            console.error("Error selectByUserId (createChallenge):", error);
             return res.status(500).json(error);
         }
 
-        res.locals.challenge_id = results.insertId;
-        next();
+        if (results.length === 0) {
+            // creator_id points to a non-existing user
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        // 2) User exists → insert challenge
+        const insertCallback = (error2, results2) => {
+
+            if (error2) {
+                console.error("Error insertChallenge:", error2);
+                return res.status(500).json(error2);
+            }
+
+            res.locals.challenge_id = results2.insertId;
+            next();
+        };
+
+        wellnessChallengeModel.insertChallenge(data, insertCallback);
     };
 
-    wellnessChallengeModel.insertChallenge(data, callback);
+    userModel.selectByUserId(userData, checkUserCallback);
 };
 
 
@@ -40,7 +64,7 @@ module.exports.readChallengeAfterCreation = (req, res, next) => {
 
     const data = { 
         challenge_id: res.locals.challenge_id 
-    }
+    };
 
     const callback = (error, results) => {
 
@@ -76,7 +100,7 @@ module.exports.getChallengeById = (req, res, next) => {
 
     const data = { 
         challenge_id: req.params.challenge_id 
-    }
+    };
 
     const callback = (error, results) => {
 
@@ -100,7 +124,8 @@ module.exports.getChallengeById = (req, res, next) => {
 module.exports.checkOwnership = (req, res, next) => {
 
     const challenge = res.locals.challenge;
-    const userId = req.body.user_id;
+
+    const userId = req.body.user_id ?? req.query.user_id;
 
     if (userId == undefined) {
         return res.status(400).json({
@@ -108,13 +133,14 @@ module.exports.checkOwnership = (req, res, next) => {
         });
     }
 
-    if (challenge.creator_id !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
+    if (Number(challenge.creator_id) !== Number(userId)) {
+        return res.status(403).json({ 
+            message: "Forbidden" 
+        });
     }
 
     next();
 };
-
 
 
 module.exports.updateChallengeById = (req, res) => {
@@ -133,9 +159,9 @@ module.exports.updateChallengeById = (req, res) => {
         }
 
         return res.status(200).json({
-            challenge_id: data.challenge_id,
+            challenge_id: Number(data.challenge_id),
             description: data.description,
-            creator_id: data.user_id,
+            creator_id: Number(data.user_id),
             points: data.points
         });
     };
@@ -146,9 +172,7 @@ module.exports.updateChallengeById = (req, res) => {
 
 module.exports.deleteChallengeById = (req, res) => {
 
-    const data = { 
-        challenge_id: req.params.challenge_id 
-    };
+    const data = { challenge_id: req.params.challenge_id };
 
     const callback = (error, results) => {
         if (error) {

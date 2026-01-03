@@ -11,34 +11,7 @@ module.exports.selectAll = (callback) => {
     pool.query(SQLSTATEMENT, callback);
 };
 
-// ##############################################################
-// SELECT INVENTORY BY USER (with food details)
-// ##############################################################
-module.exports.selectByUserId = (data, callback) => {
 
-    const SQLSTATEMENT = `
-        SELECT 
-ufi.user_id,
-ufi.food_type_id,
-ufi.quantity,
-ft.name,
-ft.diet,
-ft.xp_gain,
-ft.price_points
-        FROM UserFoodInventory ufi
-        JOIN FoodType ft
-            ON ufi.food_type_id = ft.food_type_id
-        WHERE ufi.user_id = ?;
-    `;
-
-    const VALUES = [data.user_id];
-
-    pool.query(SQLSTATEMENT, VALUES, callback);
-};
-
-// ##############################################################
-// CHECK IF A ROW EXISTS (user_id + food_type_id)
-// ##############################################################
 module.exports.selectSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -52,9 +25,6 @@ module.exports.selectSingle = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
-// ##############################################################
-// INSERT NEW INVENTORY ROW
-// ##############################################################
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -67,9 +37,6 @@ module.exports.insertSingle = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
-// ##############################################################
-// UPDATE QUANTITY
-// ##############################################################
 module.exports.updateQuantity = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -83,9 +50,7 @@ module.exports.updateQuantity = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
-// ##############################################################
-// DELETE ONE INVENTORY ROW
-// ##############################################################
+
 module.exports.deleteSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
