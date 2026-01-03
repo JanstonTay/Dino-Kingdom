@@ -57,6 +57,32 @@ module.exports.deleteById = (data, callback) => {
     `;
 
     const VALUES = [data.id];
-    
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+};
+
+
+module.exports.selectByOwnerIdWithDex = (data, callback) => {
+    const SQLSTATEMENT = `
+        SELECT 
+            d.id AS dinosaur_id,
+            d.owner_id,
+            d.dex_num,
+            d.level,
+            d.xp,
+            d.height,
+            d.weight,
+            dx.number AS dex_number,
+            dx.name,
+            dx.diet,
+            dx.rarity
+        FROM Dinosaur d
+        INNER JOIN DinosaurDex dx
+            ON d.dex_num = dx.number
+        WHERE d.owner_id = ?;
+    `;
+
+    const VALUES = [data.owner_id];
+
     pool.query(SQLSTATEMENT, VALUES, callback);
 };

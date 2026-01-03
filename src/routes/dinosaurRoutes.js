@@ -1,11 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const controller = require('../controllers/dinosaurController');
+const controller = require("../controllers/dinosaurController.js");
 
-router.get('/', controller.readAllDinosaurs);
-router.post('/', controller.createDinosaur);
-router.get('/:id', controller.readDinosaurById);
-router.get('/:id/dex', controller.readDinosaurByIdWithDexInfo);
+
+router.get("/", controller.readAllDinosaurs);
+router.post("/", controller.createDinosaur);
+
+router.get("/owner/:owner_id", controller.readDinosaursByOwnerWithDex);
+
+router.get("/:id/dex", controller.readDinosaurByIdWithDexInfo);
+
+router.get("/:id", controller.readDinosaurById);
+router.put("/:id", controller.updateDinosaurById);
+router.delete("/:id", controller.deleteDinosaurById);
 
 module.exports = router;

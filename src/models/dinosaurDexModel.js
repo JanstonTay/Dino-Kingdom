@@ -27,11 +27,11 @@ module.exports.selectByNumber = (data, callback) => {
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
-        INSERT INTO DinosaurDex (name, diet, rarity)
-        VALUES (?, ?, ?);
+        INSERT INTO DinosaurDex (number, name, diet, rarity)
+        VALUES (?, ?, ?, ?);
     `;
 
-    const VALUES = [data.name, data.diet, data.rarity];
+    const VALUES = [data.number, data.name, data.diet, data.rarity];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -41,11 +41,17 @@ module.exports.updateByNumber = (data, callback) => {
 
     const SQLSTATEMENT = `
         UPDATE DinosaurDex
-        SET name = ?, diet = ?, rarity = ?
+        SET number = ?, name = ?, diet = ?, rarity = ?
         WHERE number = ?;
     `;
 
-    const VALUES = [data.name, data.diet, data.rarity, data.number];
+    const VALUES = [
+        data.new_number,
+        data.name,
+        data.diet,
+        data.rarity,
+        data.old_number
+    ];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -59,6 +65,6 @@ module.exports.deleteByNumber = (data, callback) => {
     `;
 
     const VALUES = [data.number];
-    
+
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
