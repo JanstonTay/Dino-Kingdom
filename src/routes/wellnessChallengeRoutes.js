@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const wellnessChallengeController = require("../controllers/wellnessChallengeController.js");
+const controller = require("../controllers/wellnessChallengeController.js");
 
-router.post("/", wellnessChallengeController.checkChallengeBody, wellnessChallengeController.createChallenge, wellnessChallengeController.readChallengeAfterCreation);
+router.post("/", controller.checkChallengeBody, controller.createChallenge, controller.readChallengeAfterCreation);
 
-router.get("/", wellnessChallengeController.getAllChallenges);
+router.get("/", controller.getAllChallenges);
 
-router.put("/:challenge_id", wellnessChallengeController.checkChallengeBody, wellnessChallengeController.getChallengeById, wellnessChallengeController.checkOwnership, wellnessChallengeController.updateChallengeById);
+router.put("/:challenge_id", controller.checkChallengeBody, controller.getChallengeById, controller.checkOwnership, controller.updateChallengeById);
 
-router.delete("/:challenge_id", wellnessChallengeController.getChallengeById, wellnessChallengeController.deleteChallengeById);
+router.delete("/:challenge_id", controller.getChallengeById, controller.deleteChallengeById);
 
 module.exports = router;

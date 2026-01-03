@@ -22,4 +22,16 @@ const dinosaurDexRoutes = require('./dinosaurDexRoutes');
 router.use("/dinosaurDex", dinosaurDexRoutes);
 
 
+const foodTypeRoutes = require("./foodTypeRoutes");
+router.use("/foodTypes", foodTypeRoutes);
+
+
+const userFoodInventoryRoutes = require("./userFoodInventoryRoutes");
+router.use("/userFoodInventory", userFoodInventoryRoutes);
+
+
+const dinosaurFeedRoutes = require("./dinosaurFeedRoutes");
+router.use("/dinosaurFeed", dinosaurFeedRoutes);
+
+
 module.exports = router;
