@@ -5,6 +5,7 @@ module.exports.getAllUsers = (req, res) => {
     userModel.selectAll((error, results) => {
 
         if (error) {
+            console.error("selectAll error:", error);
             return res.status(500).json(error);
         } 
         else {
@@ -24,6 +25,7 @@ module.exports.getUserById = (req, res) => {
     userModel.selectByUserId(data, (error, results) => {
 
         if (error) {
+            console.error("selectByUserId error:", error);
             return res.status(500).json(error);
         }
 
@@ -61,6 +63,7 @@ module.exports.createUser = (req, res) => {
     userModel.selectByUsername(checkUsername, (error, results) => {
 
         if (error) {
+            console.error("selectByUsername error:", error);
             return res.status(500).json(error);
         }
 
@@ -73,6 +76,7 @@ module.exports.createUser = (req, res) => {
         userModel.insertSingle(data, (error, results) => {
 
             if (error) {
+                console.error("insertSingle error:", error);
                 return res.status(500).json(error);
             } 
             else {
@@ -110,6 +114,7 @@ module.exports.updateUserById = (req, res) => {
     userModel.selectByUserId(checkUserId, (error, userResults) => {
 
         if (error) {
+            console.error("selectByUserId error:", error);
             return res.status(500).json(error);
         }
 
@@ -127,6 +132,7 @@ module.exports.updateUserById = (req, res) => {
         userModel.selectByUsername(checkUsername, (error, usernameResults) => {
 
             if (error) {
+                console.error("selectByUsername error:", error);
                 return res.status(500).json(error);
             }
 
@@ -139,6 +145,7 @@ module.exports.updateUserById = (req, res) => {
             userModel.updateById(data, (error, result) => {
 
                 if (error) {
+                    console.error("updateById error:", error);
                     return res.status(500).json(error);
                 }
 

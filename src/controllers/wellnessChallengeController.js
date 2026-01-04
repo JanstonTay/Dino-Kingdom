@@ -22,7 +22,7 @@ module.exports.createChallenge = (req, res, next) => {
         points: req.body.points
     };
 
-    // 1) Check if creator (user) exists
+    // check if creator exists
     const userData = {
         user_id: data.user_id
     };
@@ -30,26 +30,24 @@ module.exports.createChallenge = (req, res, next) => {
     const checkUserCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectByUserId (createChallenge):", error);
+            console.error("selectByUserId error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
-            // creator_id points to a non-existing user
+        if (results.length == 0) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
 
-        // 2) User exists → insert challenge
-        const insertCallback = (error2, results2) => {
+        const insertCallback = (error, results) => {
 
-            if (error2) {
-                console.error("Error insertChallenge:", error2);
-                return res.status(500).json(error2);
+            if (error) {
+                console.error("insertChallenge error:", error);
+                return res.status(500).json(error);
             }
 
-            res.locals.challenge_id = results2.insertId;
+            res.locals.challenge_id = results.insertId;
             next();
         };
 
@@ -69,7 +67,6 @@ module.exports.readChallengeAfterCreation = (req, res, next) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error selectChallengeById (after create):", error);
             return res.status(500).json(error);
         }
 
@@ -85,7 +82,7 @@ module.exports.getAllChallenges = (req, res) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error selectAllChallenges:", error);
+            console.error("selectAllChallenges error:", error);
             return res.status(500).json(error);
         }
 
@@ -105,12 +102,14 @@ module.exports.getChallengeById = (req, res, next) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error selectChallengeById:", error);
+            console.error("selectChallengeById error:", error);
             return res.status(500).json(error);
         }
 
         if (results.length === 0) {
-            return res.status(404).json({ message: "Challenge not found" });
+            return res.status(404).json({ 
+                message: "Challenge not found" 
+            });
         }
 
         res.locals.challenge = results[0];
@@ -133,7 +132,7 @@ module.exports.checkOwnership = (req, res, next) => {
         });
     }
 
-    if (Number(challenge.creator_id) !== Number(userId)) {
+    if (Number(challenge.creator_id) != Number(userId)) {
         return res.status(403).json({ 
             message: "Forbidden" 
         });
@@ -154,7 +153,7 @@ module.exports.updateChallengeById = (req, res) => {
 
     const callback = (error, results) => {
         if (error) {
-            console.error("Error updateChallengeById:", error);
+            console.error("updateChallengeById error:", error);
             return res.status(500).json(error);
         }
 
@@ -172,11 +171,13 @@ module.exports.updateChallengeById = (req, res) => {
 
 module.exports.deleteChallengeById = (req, res) => {
 
-    const data = { challenge_id: req.params.challenge_id };
+    const data = { 
+        challenge_id: req.params.challenge_id 
+    }
 
     const callback = (error, results) => {
         if (error) {
-            console.error("Error deleteChallengeById:", error);
+            console.error("deleteChallengeById error:", error);
             return res.status(500).json(error);
         }
 

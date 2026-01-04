@@ -9,3 +9,4 @@ router.put("/:challenge_id", controller.checkChallengeBody, controller.getChalle
 router.delete("/:challenge_id", controller.getChallengeById, controller.deleteChallengeById);
 
 module.exports = router;
+
