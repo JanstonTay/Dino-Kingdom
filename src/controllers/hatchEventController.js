@@ -4,9 +4,7 @@ const dinosaurModel = require("../models/dinosaurModel.js");
 const eggTypeModel = require("../models/eggTypeModel.js");
 const dinosaurDexModel = require("../models/dinosaurDexModel.js");
 
-// ##############################################################
-// GET /hatchEvents
-// ##############################################################
+
 module.exports.readAllHatchEvents = (req, res) => {
 
     const callback = (error, results) => {
@@ -17,18 +15,18 @@ module.exports.readAllHatchEvents = (req, res) => {
         }
 
         return res.status(200).json(results);
+
     };
 
     hatchEventModel.selectAll(callback);
 };
 
 
-// ##############################################################
-// GET /hatchEvents/user/:user_id
-// ##############################################################
 module.exports.readHatchEventsByUserId = (req, res) => {
 
-    const data = { user_id: req.params.user_id };
+    const data = { 
+        user_id: req.params.user_id 
+    };
 
     const callback = (error, results) => {
 
@@ -38,6 +36,7 @@ module.exports.readHatchEventsByUserId = (req, res) => {
         }
 
         return res.status(200).json(results);
+
     };
 
     hatchEventModel.selectByUserId(data, callback);
@@ -58,6 +57,7 @@ module.exports.readHatchEventsByUserId = (req, res) => {
 //  7) Decrease egg quantity by 1
 //  8) Insert HatchEvent log
 // ##############################################################
+
 module.exports.createHatchEvent = (req, res) => {
 
     const data = {
@@ -217,5 +217,6 @@ module.exports.createHatchEvent = (req, res) => {
 
     userEggInventoryModel.selectSingle(invData, invCallback);
 };
+
 
 console.log("hatchEvent controller loaded");

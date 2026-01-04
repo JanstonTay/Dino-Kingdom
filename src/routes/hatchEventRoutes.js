@@ -9,3 +9,4 @@ router.post("/", controller.createHatchEvent);
 router.get("/user/:user_id", controller.readHatchEventsByUserId);
 
 module.exports = router;
+
