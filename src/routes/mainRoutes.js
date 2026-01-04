@@ -44,5 +44,8 @@ const hatchEventRoutes = require("./hatchEventRoutes");
 router.use("/hatchEvents", hatchEventRoutes);
 
 
+const userPurchaseRoutes = require("./userPurchaseRoutes.js");
+router.use("/userPurchases", userPurchaseRoutes);
+
 
 module.exports = router;

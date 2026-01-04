@@ -1,30 +1,20 @@
 const pool = require("../services/db");
 
 const SQLSTATEMENT = `
-SET FOREIGN_KEY_CHECKS = 0;
-
--- =============================
--- DROP TABLES (children first)
--- =============================
-
-DROP TABLE IF EXISTS HatchEvent;
-DROP TABLE IF EXISTS UserEggInventory;
-DROP TABLE IF EXISTS EggType;
-
 DROP TABLE IF EXISTS DinosaurFeed;
+DROP TABLE IF EXISTS HatchEvent;
 DROP TABLE IF EXISTS UserFoodInventory;
-DROP TABLE IF EXISTS FoodType;
-
-DROP TABLE IF EXISTS Dinosaur;
-DROP TABLE IF EXISTS DinosaurDex;
-
+DROP TABLE IF EXISTS UserEggInventory;
 DROP TABLE IF EXISTS UserCompletion;
 DROP TABLE IF EXISTS WellnessChallenge;
+DROP TABLE IF EXISTS UserPurchase;
+DROP TABLE IF EXISTS Dinosaur;
+DROP TABLE IF EXISTS DinosaurDex;
+DROP TABLE IF EXISTS FoodType;
+DROP TABLE IF EXISTS EggType;
 DROP TABLE IF EXISTS User;
 
--- =============================
--- USER + CHALLENGES
--- =============================
+
 
 CREATE TABLE User (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,15 +39,13 @@ CREATE TABLE UserCompletion (
   FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
 
--- =============================
--- DINOSAURS
--- =============================
+
 
 CREATE TABLE DinosaurDex (
   number INT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   diet ENUM('herbivore','carnivore','omnivore') NOT NULL,
-  rarity VARCHAR(255)
+  rarity VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE Dinosaur (
@@ -72,9 +60,7 @@ CREATE TABLE Dinosaur (
   FOREIGN KEY (dex_num) REFERENCES DinosaurDex(number) ON DELETE CASCADE
 );
 
--- =============================
--- FOOD SYSTEM
--- =============================
+
 
 CREATE TABLE FoodType (
   food_type_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,9 +89,7 @@ CREATE TABLE DinosaurFeed (
   FOREIGN KEY (food_type_id) REFERENCES FoodType(food_type_id) ON DELETE CASCADE
 );
 
--- =============================
--- EGG SYSTEM
--- =============================
+
 
 CREATE TABLE EggType (
   egg_type_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -134,14 +118,25 @@ CREATE TABLE HatchEvent (
   FOREIGN KEY (dinosaur_id) REFERENCES Dinosaur(id) ON DELETE CASCADE
 );
 
-SET FOREIGN_KEY_CHECKS = 1;
+
+
+CREATE TABLE UserPurchase (
+  purchase_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  item_type ENUM('egg','food') NOT NULL,
+  item_id INT NOT NULL,
+  quantity INT NOT NULL,
+  purchased_on DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
 `;
 
-pool.query(SQLSTATEMENT, (error) => {
-  if (error) {
-    console.error("Error creating tables:", error);
-  } else {
-    console.log("Tables created successfully");
-  }
-  process.exit();
+pool.query(SQLSTATEMENT, (error, results) => {
+    if (error) {
+        console.error("Error creating tables:", error);
+        process.exit(1);
+    }
+    console.log("All tables created (including UserPurchase).");
+    process.exit(0);
 });
