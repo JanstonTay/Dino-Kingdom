@@ -26,16 +26,18 @@ module.exports.getUserById = (req, res) => {
         if (error) {
             return res.status(500).json(error);
         }
-        else if (results.length === 0) {
+
+        else if (results.length == 0) {
             return res.status(404).json({
                 message: "User not found"
             });
         }
+        
         else {
             return res.status(200).json(results[0]);
         }
 
-    });
+    })
 };
 
 
@@ -45,39 +47,37 @@ module.exports.createUser = (req, res) => {
         username: req.body.username
     };
 
-    if (!data.username || data.username === undefined) {
+    if (!data.username || data.username == undefined) {
         return res.status(400).json({
             message: "Missing username"
         });
     }
 
-    const checkData = {
+    const checkUsername = {
         username: data.username
     };
 
-    // First check if username already exists
-    userModel.selectByUsername(checkData, (error, results) => {
+    // check if username already exist
+    userModel.selectByUsername(checkUsername, (error, results) => {
 
         if (error) {
             return res.status(500).json(error);
         }
 
         if (results.length > 0) {
-            // Someone already has this username
             return res.status(409).json({
                 message: "Username taken"
             });
         }
 
-        // Safe to insert
-        userModel.insertSingle(data, (error2, results2) => {
+        userModel.insertSingle(data, (error, results) => {
 
-            if (error2) {
-                return res.status(500).json(error2);
+            if (error) {
+                return res.status(500).json(error);
             } 
             else {
                 return res.status(201).json({
-                    user_id: results2.insertId,
+                    user_id: results.insertId,
                     username: data.username,
                     points: 0
                 });
@@ -96,18 +96,18 @@ module.exports.updateUserById = (req, res) => {
         points: req.body.points
     };
 
-    if (data.username === undefined || data.points === undefined) {
+    if (data.username == undefined || data.points == undefined) {
         return res.status(400).json({
             message: "Missing username or points"
         });
     }
 
-    const userIdData = {
+    const checkUserId = {
         user_id: data.user_id
     };
 
-    // 1) Check that the user exists
-    userModel.selectByUserId(userIdData, (error, userResults) => {
+    // check that the user exist
+    userModel.selectByUserId(checkUserId, (error, userResults) => {
 
         if (error) {
             return res.status(500).json(error);
@@ -119,15 +119,15 @@ module.exports.updateUserById = (req, res) => {
             });
         }
 
-        const checkData = {
+        const checkUsername = {
             username: data.username
         };
 
-        // 2) Check if some *other* user already has this username
-        userModel.selectByUsername(checkData, (error2, usernameResults) => {
+        // check if another user already has this username
+        userModel.selectByUsername(checkUsername, (error, usernameResults) => {
 
-            if (error2) {
-                return res.status(500).json(error2);
+            if (error) {
+                return res.status(500).json(error);
             }
 
             if (usernameResults.length > 0 && usernameResults[0].user_id != data.user_id) {
@@ -136,20 +136,19 @@ module.exports.updateUserById = (req, res) => {
                 });
             }
 
-            // 3) Safe to update
-            userModel.updateById(data, (error3, result) => {
+            userModel.updateById(data, (error, result) => {
 
-                if (error3) {
-                    return res.status(500).json(error3);
+                if (error) {
+                    return res.status(500).json(error);
                 }
 
                 return res.status(200).json({
                     user_id: Number(data.user_id),
                     username: data.username,
                     points: data.points
-                });
+                })
 
-            });
+            })
 
         });
 
