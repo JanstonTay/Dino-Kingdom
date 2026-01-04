@@ -1,9 +1,5 @@
 const pool = require("../services/db");
 
-// ##############################################################
-// BASIC READS
-// ##############################################################
-
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
@@ -29,25 +25,19 @@ module.exports.selectByDinosaurId = (data, callback) => {
 };
 
 
-// ##############################################################
-// CONTEXT QUERIES (DINO, FOOD, INVENTORY)
-// ##############################################################
-
-// Dinosaur + its diet (from DinosaurDex)
 module.exports.selectDinosaurWithDiet = (data, callback) => {
 
     const SQLSTATEMENT = `
         SELECT 
-            d.id,
-            d.owner_id,
-            d.level,
-            d.xp,
-            d.height,
-            d.weight,
-            dx.diet AS dinosaur_diet
+
+        d.id, d.owner_id, d.level, d.xp, d.height, d.weight,
+
+        dx.diet AS dinosaur_diet
+
         FROM Dinosaur d
         JOIN DinosaurDex dx
-            ON d.dex_num = dx.number
+        ON d.dex_num = dx.number
+
         WHERE d.id = ?;
     `;
 
@@ -57,7 +47,6 @@ module.exports.selectDinosaurWithDiet = (data, callback) => {
 };
 
 
-// FoodType (diet + xp_gain)
 module.exports.selectFoodTypeById = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -72,7 +61,6 @@ module.exports.selectFoodTypeById = (data, callback) => {
 };
 
 
-// Inventory row for a given user + food_type
 module.exports.selectInventoryRow = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -87,11 +75,7 @@ module.exports.selectInventoryRow = (data, callback) => {
 };
 
 
-// ##############################################################
-// WRITE OPERATIONS (LOG FEED, UPDATE INVENTORY, UPDATE DINO)
-// ##############################################################
 
-// Log the feed event
 module.exports.insertFeedEvent = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -99,39 +83,29 @@ module.exports.insertFeedEvent = (data, callback) => {
         VALUES (?, ?, ?, NOW());
     `;
 
-    const VALUES = [
-        data.dinosaur_id,
-        data.food_type_id,
-        data.quantity
-    ];
+    const VALUES = [data.dinosaur_id, data.food_type_id, data.quantity];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
 
-// Decrease inventory (with safety check)
 module.exports.decrementInventory = (data, callback) => {
 
     const SQLSTATEMENT = `
         UPDATE UserFoodInventory
         SET quantity = quantity - ?
+
         WHERE user_id = ?
           AND food_type_id = ?
           AND quantity >= ?;
     `;
 
-    const VALUES = [
-        data.quantity,
-        data.user_id,
-        data.food_type_id,
-        data.quantity
-    ];
+    const VALUES = [data.quantity, data.user_id, data.food_type_id, data.quantity];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
 
-// Update dinosaur level, xp, height, weight
 module.exports.updateDinosaurStats = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -140,13 +114,8 @@ module.exports.updateDinosaurStats = (data, callback) => {
         WHERE id = ?;
     `;
 
-    const VALUES = [
-        data.level,
-        data.xp,
-        data.height,
-        data.weight,
-        data.dinosaur_id
-    ];
+    const VALUES = [data.level, data.xp, data.height, data.weight, data.dinosaur_id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
+

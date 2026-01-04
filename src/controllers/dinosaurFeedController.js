@@ -1,25 +1,31 @@
 const dinosaurFeedModel = require("../models/dinosaurFeedModel.js");
 
-// ##############################################################
-// HELPERS
-// ##############################################################
 
 // Diet compatibility:
-// - Herbivore dino -> only Herbivore food
-// - Carnivore dino -> only Carnivore food
-// - Omnivore dino -> can eat both
+// - Herbivore dinosaur -> only Herbivore food
+// - Carnivore dinosaur -> only Carnivore food
+// - Omnivore dinosaur -> can eat both
+
 const dietsCompatible = (dinoDietRaw, foodDietRaw) => {
 
-    if (!dinoDietRaw || !foodDietRaw) return false;
+    if (!dinoDietRaw || !foodDietRaw) {
+        return false;
+    }
 
     const dinoDiet = dinoDietRaw.trim().toLowerCase();
     const foodDiet = foodDietRaw.trim().toLowerCase();
 
-    if (dinoDiet === "omnivore") return true;
+    if (dinoDiet === "omnivore") {
+        return true;
+    }
 
-    if (dinoDiet === "herbivore" && foodDiet === "herbivore") return true;
+    if (dinoDiet === "herbivore" && foodDiet === "herbivore") {
+        return true;
+    }
 
-    if (dinoDiet === "carnivore" && foodDiet === "carnivore") return true;
+    if (dinoDiet === "carnivore" && foodDiet === "carnivore") {
+        return true;
+    }
 
     return false;
 };
@@ -55,24 +61,23 @@ function applyXpAndLevel(dinosaur, gainedXp) {
             level += 1;
             height = height * 1.5;
             weight = weight * 1.5;
-        } else {
+        } 
+        else {
             break;
         }
     }
 
-    // optional rounding
+    // round to 2 s.f.
     height = Number(height.toFixed(2));
     weight = Number(weight.toFixed(2));
 
-    return { level, xp, height, weight };
+    return { 
+        level, xp, height, weight 
+    };
+
 }
 
 
-// ##############################################################
-// READ CONTROLLERS
-// ##############################################################
-
-// GET /dinosaurFeed
 module.exports.readAllDinosaurFeed = (req, res) => {
 
     const callback = (error, results) => {
@@ -83,13 +88,13 @@ module.exports.readAllDinosaurFeed = (req, res) => {
         }
 
         return res.status(200).json(results);
+
     };
 
     dinosaurFeedModel.selectAll(callback);
 };
 
 
-// GET /dinosaurFeed/:dinosaur_id
 module.exports.readFeedByDinosaurId = (req, res) => {
 
     const data = {
@@ -116,11 +121,6 @@ module.exports.readFeedByDinosaurId = (req, res) => {
 };
 
 
-// ##############################################################
-// CREATE FEED EVENT
-// ##############################################################
-
-// POST /dinosaurFeed
 module.exports.createFeedEvent = (req, res) => {
 
     const data = {
@@ -130,7 +130,6 @@ module.exports.createFeedEvent = (req, res) => {
         quantity: req.body.quantity
     };
 
-    // 1) Basic body validation
     if (
         data.user_id == undefined ||
         data.dinosaur_id == undefined ||
@@ -143,12 +142,13 @@ module.exports.createFeedEvent = (req, res) => {
     }
 
     if (Number(data.quantity) <= 0) {
+
         return res.status(400).json({
             message: "Quantity must be greater than 0"
         });
+
     }
 
-    // 2) Get dinosaur (with diet) and check ownership
     const dinoData = {
         dinosaur_id: data.dinosaur_id
     };
@@ -168,14 +168,12 @@ module.exports.createFeedEvent = (req, res) => {
 
         const dinosaur = dinoResults[0];
 
-        // ownership check
         if (Number(dinosaur.owner_id) !== Number(data.user_id)) {
             return res.status(403).json({
                 message: "Forbidden: dinosaur does not belong to this user"
             });
         }
 
-        // 3) Get food type
         const foodData = {
             food_type_id: data.food_type_id
         };
@@ -195,14 +193,12 @@ module.exports.createFeedEvent = (req, res) => {
 
             const food = foodResults[0];
 
-            // diet rule
             if (!dietsCompatible(dinosaur.dinosaur_diet, food.diet)) {
                 return res.status(403).json({
                     message: "Food diet not compatible with dinosaur diet"
                 });
             }
 
-            // 4) Check inventory
             const inventoryData = {
                 user_id: data.user_id,
                 food_type_id: data.food_type_id
@@ -229,11 +225,11 @@ module.exports.createFeedEvent = (req, res) => {
                     });
                 }
 
-                // 5) Calculate XP gain + new stats
+                //  Calculate XP gain + new stats
                 const gainedXp = Number(food.xp_gain) * Number(data.quantity);
                 const updatedStats = applyXpAndLevel(dinosaur, gainedXp);
 
-                // 6) Insert feed event
+                //  Insert feed event
                 const feedData = {
                     dinosaur_id: data.dinosaur_id,
                     food_type_id: data.food_type_id,
@@ -249,7 +245,7 @@ module.exports.createFeedEvent = (req, res) => {
 
                     const feed_id = feedResults.insertId;
 
-                    // 7) Decrement inventory
+                    //  Decrement inventory
                     const decData = {
                         user_id: data.user_id,
                         food_type_id: data.food_type_id,
@@ -269,7 +265,7 @@ module.exports.createFeedEvent = (req, res) => {
                             });
                         }
 
-                        // 8) Update dinosaur stats (level, xp, height, weight)
+                        // Update dinosaur stats (level, xp, height, weight)
                         const statsData = {
                             dinosaur_id: data.dinosaur_id,
                             level: updatedStats.level,
@@ -318,3 +314,4 @@ module.exports.createFeedEvent = (req, res) => {
 };
 
 console.log("dinosaurFeed controller loaded");
+
