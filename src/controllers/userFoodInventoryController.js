@@ -1,40 +1,35 @@
 const userFoodInventoryModel = require("../models/userFoodInventoryModel.js");
 
-// ##############################################################
-// GET /userFoodInventory  -> all inventory rows
-// ##############################################################
 module.exports.readAllUserFoodInventory = (req, res) => {
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error readAllUserFoodInventory:", error);
+            console.error("error readAllUserFoodInventory:", error);
             return res.status(500).json(error);
         }
 
         return res.status(200).json(results);
+
     };
 
     userFoodInventoryModel.selectAll(callback);
 };
 
 
-// ##############################################################
-// GET /userFoodInventory/user/:user_id
-// -> all food + quantity for a single user
-// ##############################################################
 module.exports.readUserFoodInventoryByUserId = (req, res) => {
 
     const data = {
         user_id: req.params.user_id
-    };
+    }
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error readUserFoodInventoryByUserId:", error);
+            console.error("error readUserFoodInventoryByUserId:", error);
             return res.status(500).json(error);
         }
 
-        // if user has no food, just return empty array (that’s fine)
         return res.status(200).json(results);
     };
 
@@ -42,12 +37,6 @@ module.exports.readUserFoodInventoryByUserId = (req, res) => {
 };
 
 
-// ##############################################################
-// POST /userFoodInventory
-// -> "buy" food: if row exists, ADD to quantity (10 + 10 = 20)
-//    if row doesn't exist, create it
-// body: { "user_id": 1, "food_type_id": 2, "quantity": 10 }
-// ##############################################################
 module.exports.addUserFoodInventory = (req, res) => {
 
     const data = {
@@ -61,6 +50,7 @@ module.exports.addUserFoodInventory = (req, res) => {
         return res.status(400).json({
             message: "Missing user_id or food_type_id or quantity"
         });
+
     }
 
     if (Number(data.quantity) <= 0) {
@@ -77,11 +67,10 @@ module.exports.addUserFoodInventory = (req, res) => {
     const checkCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectSingle (addUserFoodInventory):", error);
+            console.error("error selectSingle:", error);
             return res.status(500).json(error);
         }
 
-        // If row already exists -> quantity += new quantity
         if (results.length > 0) {
             const current = results[0];
             const newQuantity = Number(current.quantity) + Number(data.quantity);
@@ -92,15 +81,16 @@ module.exports.addUserFoodInventory = (req, res) => {
                 quantity: newQuantity
             };
 
-            const updateCallback = (error2, results2) => {
+            const updateCallback = (error, results) => {
 
-                if (error2) {
-                    console.error("Error updateQuantity (addUserFoodInventory):", error2);
-                    return res.status(500).json(error2);
+                if (error) {
+                    console.error("error updateQuantity:", error);
+                    return res.status(500).json(error);
                 }
 
                 return res.status(200).json({
-                    message: "Inventory updated (quantity added)",
+                    message: "Inventory updated",
+
                     user_id: updateData.user_id,
                     food_type_id: updateData.food_type_id,
                     quantity: updateData.quantity
@@ -110,16 +100,17 @@ module.exports.addUserFoodInventory = (req, res) => {
             userFoodInventoryModel.updateQuantity(updateData, updateCallback);
         }
         else {
-            // No row -> create new with given quantity
-            const insertCallback = (error2, results2) => {
 
-                if (error2) {
-                    console.error("Error insertSingle (addUserFoodInventory):", error2);
-                    return res.status(500).json(error2);
+            const insertCallback = (error, results) => {
+
+                if (error) {
+                    console.error("error insertSingle:", error);
+                    return res.status(500).json(error);
                 }
 
                 return res.status(201).json({
                     message: "Inventory created",
+
                     user_id: data.user_id,
                     food_type_id: data.food_type_id,
                     quantity: data.quantity
@@ -134,11 +125,6 @@ module.exports.addUserFoodInventory = (req, res) => {
 };
 
 
-// ##############################################################
-// PUT /userFoodInventory
-// -> set quantity to an EXACT value
-// body: { "user_id": 1, "food_type_id": 2, "quantity": 20 }
-// ##############################################################
 module.exports.updateUserFoodInventory = (req, res) => {
 
     const data = {
@@ -162,21 +148,21 @@ module.exports.updateUserFoodInventory = (req, res) => {
     const checkCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectSingle (updateUserFoodInventory):", error);
+            console.error("error selectSingle:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
             return res.status(404).json({
                 message: "Inventory row not found"
             });
         }
 
-        const updateCallback = (error2, results2) => {
+        const updateCallback = (error, results) => {
 
-            if (error2) {
-                console.error("Error updateQuantity (updateUserFoodInventory):", error2);
-                return res.status(500).json(error2);
+            if (error) {
+                console.error("Error updateQuantity:", error);
+                return res.status(500).json(error);
             }
 
             return res.status(200).json({
@@ -185,6 +171,7 @@ module.exports.updateUserFoodInventory = (req, res) => {
                 food_type_id: data.food_type_id,
                 quantity: data.quantity
             });
+
         };
 
         userFoodInventoryModel.updateQuantity(data, updateCallback);
@@ -194,11 +181,6 @@ module.exports.updateUserFoodInventory = (req, res) => {
 };
 
 
-// ##############################################################
-// DELETE /userFoodInventory
-// -> delete one food_type for a user
-// body: { "user_id": 1, "food_type_id": 2 }
-// ##############################################################
 module.exports.deleteUserFoodInventoryItem = (req, res) => {
 
     const data = {
@@ -219,7 +201,7 @@ module.exports.deleteUserFoodInventoryItem = (req, res) => {
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
+        if (results.affectedRows == 0) {
             return res.status(404).json({
                 message: "Inventory row not found"
             });
@@ -232,3 +214,4 @@ module.exports.deleteUserFoodInventoryItem = (req, res) => {
 };
 
 console.log("userFoodInventory controller loaded");
+

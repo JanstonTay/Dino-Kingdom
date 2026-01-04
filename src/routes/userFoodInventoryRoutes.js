@@ -12,3 +12,4 @@ router.get("/user/:user_id", controller.readUserFoodInventoryByUserId);
 
 
 module.exports = router;
+

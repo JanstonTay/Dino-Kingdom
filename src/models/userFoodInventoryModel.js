@@ -1,6 +1,5 @@
 const pool = require("../services/db");
 
-// SELECT all rows
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
@@ -12,7 +11,6 @@ module.exports.selectAll = (callback) => {
 };
 
 
-// SELECT all food for one user
 module.exports.selectByUserId = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -27,7 +25,6 @@ module.exports.selectByUserId = (data, callback) => {
 };
 
 
-// SELECT one specific row (user + food_type)
 module.exports.selectSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -42,7 +39,6 @@ module.exports.selectSingle = (data, callback) => {
 };
 
 
-// INSERT new row
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -56,7 +52,6 @@ module.exports.insertSingle = (data, callback) => {
 };
 
 
-// UPDATE quantity (set to exact value)
 module.exports.updateQuantity = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -71,7 +66,6 @@ module.exports.updateQuantity = (data, callback) => {
 };
 
 
-// DELETE one row
 module.exports.deleteSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
