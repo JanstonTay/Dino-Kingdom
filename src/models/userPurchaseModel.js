@@ -1,6 +1,5 @@
 const pool = require("../services/db");
 
-// SELECT all purchases
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
@@ -12,7 +11,6 @@ module.exports.selectAll = (callback) => {
 };
 
 
-// SELECT purchases by user
 module.exports.selectByUserId = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -27,7 +25,6 @@ module.exports.selectByUserId = (data, callback) => {
 };
 
 
-// INSERT a purchase row
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -35,13 +32,8 @@ module.exports.insertSingle = (data, callback) => {
         VALUES (?, ?, ?, ?, ?);
     `;
 
-    const VALUES = [
-        data.user_id,
-        data.item_type,
-        data.item_id,
-        data.quantity,
-        data.purchased_on
-    ];
+    const VALUES = [data.user_id, data.item_type, data.item_id, data.quantity, data.purchased_on];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
+
