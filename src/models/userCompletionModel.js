@@ -47,7 +47,6 @@ module.exports.addPointsToUser = (data, callback) => {
         WHERE user_id = ?;
     `;
 
-    // NOTE: property name matches controller: points_to_add
     const VALUES = [data.points_to_add, data.user_id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
@@ -64,4 +63,4 @@ module.exports.selectAttemptsByChallengeId = (data, callback) => {
     const VALUES = [data.challenge_id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
-};
+}

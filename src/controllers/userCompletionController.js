@@ -22,11 +22,11 @@ module.exports.checkUserAndChallenge = (req, res, next) => {
     const userCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectUserById:", error);
+            console.error("selectUserById error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
             return res.status(404).json({
                 message: "User not found"
             });
@@ -36,21 +36,20 @@ module.exports.checkUserAndChallenge = (req, res, next) => {
             challenge_id: req.params.challenge_id
         };
 
-        const challengeCallback = (error2, results2) => {
+        const challengeCallback = (error, results) => {
 
-            if (error2) {
-                console.error("Error selectChallengeById:", error2);
-                return res.status(500).json(error2);
+            if (error) {
+                console.error("selectChallengeById error:", error);
+                return res.status(500).json(error);
             }
 
-            if (results2.length === 0) {
+            if (results.length == 0) {
                 return res.status(404).json({
                     message: "Challenge not found"
                 });
             }
 
-            // store how many points this challenge is worth
-            res.locals.points_to_add = results2[0].points;
+            res.locals.points_to_add = results[0].points;
             next();
         };
 
@@ -72,7 +71,7 @@ module.exports.completeChallengeAndAddPoints = (req, res) => {
     const insertCallback = (error, results) => {
 
         if (error) {
-            console.error("Error insertCompletion:", error);
+            console.error("insertCompletion error:", error);
             return res.status(500).json(error);
         }
 
@@ -80,14 +79,14 @@ module.exports.completeChallengeAndAddPoints = (req, res) => {
 
         const rewardData = {
             user_id: data.user_id,
-            points_to_add: res.locals.points_to_add   // <- matches model
+            points_to_add: res.locals.points_to_add
         };
 
-        const rewardCallback = (error2) => {
+        const rewardCallback = (error) => {
 
-            if (error2) {
-                console.error("Error addPointsToUser:", error2);
-                return res.status(500).json(error2);
+            if (error) {
+                console.error("addPointsToUser error:", error);
+                return res.status(500).json(error);
             }
 
             return res.status(201).json({
@@ -114,11 +113,11 @@ module.exports.getCompletionsByChallengeId = (req, res) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error selectAttemptsByChallengeId:", error);
+            console.error("selectAttemptsByChallengeId error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
 
             return res.status(404).json({
                 message: "No attempts found"
@@ -132,3 +131,4 @@ module.exports.getCompletionsByChallengeId = (req, res) => {
 };
 
 console.log("userCompletion controller loaded");
+

@@ -7,3 +7,4 @@ router.post("/:challenge_id/completions", controller.checkCompletionBody, contro
 router.get("/:challenge_id/completions", controller.getCompletionsByChallengeId);
 
 module.exports = router;
+
