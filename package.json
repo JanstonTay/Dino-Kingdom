@@ -1,26 +1,29 @@
 {
-    "scripts": {
-    "test": "npm run init_tables && jest --forceExit",
+  "name": "bed-ca1",
+  "version": "1.0.0",
+  "description": "Backend wellness-themed progression game where users earn points by completing challenges, purchase eggs and food using those points, hatch dinosaurs, and manage their growth through feeding and inventory mechanics."
+,
+  "main": "index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mysql2": "^3.16.0",
+    "nodemon": "^3.1.11"
+  },
+  "scripts": {
     "init_tables": "node src/configs/createSchema.js && node src/configs/initTables.js",
-    "create": "node examples/crud/create.js",
-    "read": "node examples/crud/read.js",
-    "update": "node examples/crud/update.js",
-    "delete": "node examples/crud/delete.js",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "dependencies": {
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "jest": "^30.2.0",
-    "mysql2": "^3.15.3",
-    "nodemon": "^3.1.11",
-    "supertest": "^7.1.4"
+   "repository": {
+    "type": "git",
+    "url": "https://github.com/ST0503-BED/bed-ca1-JanstonTay.git"
   },
-  "jest": {
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/jest.setup.js"
-    ],
-    "testEnvironment": "node"
-  }
+  "author": "Janston Tay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ST0503-BED/bed-ca1-JanstonTay/issues"
+  },
+  "homepage": "https://github.com/ST0503-BED/bed-ca1-JanstonTay#readme"
 }
