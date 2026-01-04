@@ -36,4 +36,3 @@ module.exports.insertSingle = (data, callback) => {
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
-
