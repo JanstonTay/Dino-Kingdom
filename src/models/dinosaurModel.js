@@ -1,4 +1,4 @@
-const pool = require('../services/db');
+const pool = require("../services/db");
 
 module.exports.selectAll = (callback) => {
 
@@ -7,7 +7,6 @@ module.exports.selectAll = (callback) => {
     `;
 
     pool.query(SQLSTATEMENT, callback);
-
 };
 
 
@@ -17,6 +16,7 @@ module.exports.selectById = (data, callback) => {
         SELECT * FROM Dinosaur
         WHERE id = ?;
     `;
+
     const VALUES = [data.id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
@@ -29,7 +29,15 @@ module.exports.insertSingle = (data, callback) => {
         INSERT INTO Dinosaur (owner_id, dex_num, level, xp, height, weight)
         VALUES (?, ?, ?, ?, ?, ?);
     `;
-    const VALUES = [data.owner_id, data.dex_num, data.level, data.xp, data.height, data.weight];
+
+    const VALUES = [
+        data.owner_id,
+        data.dex_num,
+        data.level,
+        data.xp,
+        data.height,
+        data.weight
+    ];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -43,7 +51,15 @@ module.exports.updateById = (data, callback) => {
         WHERE id = ?;
     `;
 
-    const VALUES = [data.owner_id, data.dex_num, data.level, data.xp, data.height, data.weight, data.id];
+    const VALUES = [
+        data.owner_id,
+        data.dex_num,
+        data.level,
+        data.xp,
+        data.height,
+        data.weight,
+        data.id
+    ];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -62,7 +78,9 @@ module.exports.deleteById = (data, callback) => {
 };
 
 
+// still kept in case you ever want it again – but no route uses it now
 module.exports.selectByOwnerIdWithDex = (data, callback) => {
+
     const SQLSTATEMENT = `
         SELECT 
             d.id AS dinosaur_id,

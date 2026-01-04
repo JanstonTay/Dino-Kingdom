@@ -34,4 +34,15 @@ const dinosaurFeedRoutes = require("./dinosaurFeedRoutes");
 router.use("/dinosaurFeed", dinosaurFeedRoutes);
 
 
+const eggTypeRoutes = require("./eggTypeRoutes");
+router.use("/eggTypes", eggTypeRoutes);
+
+const userEggInventoryRoutes = require("./userEggInventoryRoutes");
+router.use("/userEggInventory", userEggInventoryRoutes);
+
+const hatchEventRoutes = require("./hatchEventRoutes");
+router.use("/hatchEvents", hatchEventRoutes);
+
+
+
 module.exports = router;

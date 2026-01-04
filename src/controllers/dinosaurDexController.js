@@ -1,12 +1,18 @@
 const dinosaurDexModel = require("../models/dinosaurDexModel.js");
 
 
+// ##############################################################
+// READ ALL DEX ENTRIES
+// ##############################################################
 module.exports.readAllDinosaurDex = (req, res) => {
+
     const callback = (error, results) => {
+
         if (error) {
             console.error("Error readAllDinosaurDex:", error);
             return res.status(500).json(error);
         }
+
         return res.status(200).json(results);
     };
 
@@ -14,17 +20,26 @@ module.exports.readAllDinosaurDex = (req, res) => {
 };
 
 
+// ##############################################################
+// READ DEX ENTRY BY NUMBER
+// ##############################################################
 module.exports.readDinosaurDexByNumber = (req, res) => {
-    const data = { number: req.params.number };
+
+    const data = {
+        number: req.params.number
+    };
 
     const callback = (error, results) => {
+
         if (error) {
             console.error("Error readDinosaurDexByNumber:", error);
             return res.status(500).json(error);
         }
 
         if (results.length === 0) {
-            return res.status(404).send("Dex entry not found");
+            return res.status(404).json({
+                message: "DinosaurDex entry not found"
+            });
         }
 
         return res.status(200).json(results[0]);
@@ -34,6 +49,9 @@ module.exports.readDinosaurDexByNumber = (req, res) => {
 };
 
 
+// ##############################################################
+// CREATE DEX ENTRY (POST)
+// ##############################################################
 module.exports.createDinosaurDex = (req, res) => {
 
     const data = {
@@ -43,40 +61,47 @@ module.exports.createDinosaurDex = (req, res) => {
         rarity: req.body.rarity
     };
 
-    if (data.number == null || data.name == null) {
+    if (data.number == null || !data.name || !data.diet || !data.rarity) {
 
         return res.status(400).json({
-            message: "Missing number or name"
+            message: "Missing number or name or diet or rarity"
         });
-
     }
 
-    const checkData = { 
-        number: data.number 
+    const checkData = {
+        name: data.name
     };
 
     const checkCallback = (error, results) => {
 
         if (error) {
-            console.error("Error check existing DinosaurDex number:", error);
+            console.error("Error selectByName (createDinosaurDex):", error);
             return res.status(500).json(error);
         }
 
+        // If a dino with this name already exists, reject
         if (results.length > 0) {
-            return res.status(400).json({
-                message: "Dex number already exists"
+            return res.status(409).json({
+                message: "Dinosaur already exists in Dex"
             });
         }
 
-        const insertCallback = (error, results) => {
+        const insertCallback = (error2, results2) => {
 
-            if (error) {
-                console.error("Error createDinosaurDex:", error);
-                return res.status(500).json(error);
+            if (error2) {
+
+                // Extra safety if you later make name or number UNIQUE
+                if (error2.code === "ER_DUP_ENTRY") {
+                    return res.status(409).json({
+                        message: "Dinosaur already exists in Dex"
+                    });
+                }
+
+                console.error("Error createDinosaurDex:", error2);
+                return res.status(500).json(error2);
             }
 
             return res.status(201).json({
-                message: "DinosaurDex entry created",
                 number: data.number,
                 name: data.name,
                 diet: data.diet,
@@ -87,45 +112,52 @@ module.exports.createDinosaurDex = (req, res) => {
         dinosaurDexModel.insertSingle(data, insertCallback);
     };
 
-    dinosaurDexModel.selectByNumber(checkData, checkCallback);
+    dinosaurDexModel.selectByName(checkData, checkCallback);
 };
 
 
-module.exports.updateDinosaurDex = (req, res) => {
+// ##############################################################
+// UPDATE DEX ENTRY (PUT)
+// ##############################################################
+module.exports.updateDinosaurDexByNumber = (req, res) => {
 
     const data = {
-        old_number: req.params.number,
-        new_number: req.body.number,
+        number: req.params.number,
         name: req.body.name,
         diet: req.body.diet,
         rarity: req.body.rarity
     };
 
-    if (data.new_number == null) {
-        data.new_number = data.old_number;
-    }
+    if (!data.name || !data.diet || !data.rarity) {
 
-    if (data.name == null) {
         return res.status(400).json({
-            message: "Missing name"
+            message: "Missing name or diet or rarity"
         });
     }
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error updateDinosaurDex:", error);
+
+            if (error.code === "ER_DUP_ENTRY") {
+                return res.status(409).json({
+                    message: "Dinosaur already exists in Dex"
+                });
+            }
+
+            console.error("Error updateDinosaurDexByNumber:", error);
             return res.status(500).json(error);
         }
 
         if (results.affectedRows === 0) {
             return res.status(404).json({
-                message: "Dex entry not found"
+                message: "DinosaurDex entry not found"
             });
         }
 
         return res.status(200).json({
             message: "DinosaurDex entry updated",
-            number: data.new_number,
+            number: Number(data.number),
             name: data.name,
             diet: data.diet,
             rarity: data.rarity
@@ -136,14 +168,26 @@ module.exports.updateDinosaurDex = (req, res) => {
 };
 
 
-module.exports.deleteDinosaurDex = (req, res) => {
+// ##############################################################
+// DELETE DEX ENTRY (DELETE)
+// ##############################################################
+module.exports.deleteDinosaurDexByNumber = (req, res) => {
 
-    const data = { number: req.params.number };
+    const data = {
+        number: req.params.number
+    };
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error deleteDinosaurDex:", error);
+            console.error("Error deleteDinosaurDexByNumber:", error);
             return res.status(500).json(error);
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({
+                message: "DinosaurDex entry not found"
+            });
         }
 
         return res.status(204).send();
@@ -151,3 +195,5 @@ module.exports.deleteDinosaurDex = (req, res) => {
 
     dinosaurDexModel.deleteByNumber(data, callback);
 };
+
+console.log("dinosaurDex controller loaded");

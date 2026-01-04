@@ -2,6 +2,9 @@ const dinosaurModel = require("../models/dinosaurModel.js");
 const dinosaurDexModel = require("../models/dinosaurDexModel.js");
 
 
+// ##############################################################
+// READ ALL DINOSAURS
+// ##############################################################
 module.exports.readAllDinosaurs = (req, res) => {
 
     const callback = (error, results) => {
@@ -17,7 +20,9 @@ module.exports.readAllDinosaurs = (req, res) => {
 };
 
 
-
+// ##############################################################
+// CREATE DINOSAUR
+// ##############################################################
 module.exports.createDinosaur = (req, res) => {
 
     const dinosaurData = {
@@ -53,7 +58,7 @@ module.exports.createDinosaur = (req, res) => {
 
         return res.status(201).json({
             message: "Dinosaur created",
-            dinosaur_id: newId,
+            id: newId,
             owner_id: data.owner_id,
             dex_num: data.dex_num,
             level: data.level,
@@ -67,6 +72,9 @@ module.exports.createDinosaur = (req, res) => {
 };
 
 
+// ##############################################################
+// READ DINOSAUR BY ID (simple)
+// ##############################################################
 module.exports.readDinosaurById = (req, res) => {
 
     const data = { id: req.params.id };
@@ -88,6 +96,9 @@ module.exports.readDinosaurById = (req, res) => {
 };
 
 
+// ##############################################################
+// READ DINOSAUR BY ID WITH DEX INFO
+// ##############################################################
 module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
 
     const data = { id: req.params.id };
@@ -154,33 +165,16 @@ module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
 };
 
 
-module.exports.readDinosaursByOwnerWithDex = (req, res) => {
-
-    const data = { owner_id: req.params.owner_id };
-
-    const callback = (error, results) => {
-        if (error) {
-            console.error("Error readDinosaursByOwnerWithDex:", error);
-            return res.status(500).json(error);
-        }
-
-        if (results.length === 0) {
-            return res.status(404).json({
-                message: "No dinosaurs found for this owner"
-            });
-        }
-
-        return res.status(200).json(results);
-    };
-
-    dinosaurModel.selectByOwnerIdWithDex(data, callback);
-};
-
-
+// ##############################################################
+// UPDATE DINOSAUR BY ID  (FIXED)
+// - supports partial updates (only send fields you want to change)
+// ##############################################################
 module.exports.updateDinosaurById = (req, res) => {
 
-    const data = {
-        id: req.params.id,
+    const id = req.params.id;
+
+    // What client is trying to update (can be partial)
+    const incoming = {
         owner_id: req.body.owner_id,
         dex_num: req.body.dex_num,
         level: req.body.level,
@@ -189,45 +183,76 @@ module.exports.updateDinosaurById = (req, res) => {
         weight: req.body.weight
     };
 
+    // If literally nothing is provided, no point updating
     if (
-        data.owner_id == null ||
-        data.dex_num == null ||
-        data.level == null ||
-        data.xp == null
+        incoming.owner_id == null &&
+        incoming.dex_num == null &&
+        incoming.level == null &&
+        incoming.xp == null &&
+        incoming.height == null &&
+        incoming.weight == null
     ) {
         return res.status(400).json({
-            message: "Missing owner_id or dex_num or level or xp"
+            message: "No fields provided to update"
         });
     }
 
-    const callback = (error, results) => {
+    const findCallback = (error, results) => {
+
         if (error) {
-            console.error("Error updateDinosaurById:", error);
+            console.error("Error updateDinosaurById (select):", error);
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
-            return res.status(404).json({
-                message: "Dinosaur not found"
-            });
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Dinosaur not found" });
         }
 
-        return res.status(200).json({
-            message: "Dinosaur updated",
-            id: data.id,
-            owner_id: data.owner_id,
-            dex_num: data.dex_num,
-            level: data.level,
-            xp: data.xp,
-            height: data.height,
-            weight: data.weight
-        });
+        const current = results[0];
+
+        // Merge: use incoming value if not null/undefined, else keep current
+        const dataToUpdate = {
+            id: current.id,
+            owner_id: incoming.owner_id != null ? incoming.owner_id : current.owner_id,
+            dex_num: incoming.dex_num != null ? incoming.dex_num : current.dex_num,
+            level: incoming.level != null ? incoming.level : current.level,
+            xp: incoming.xp != null ? incoming.xp : current.xp,
+            height: incoming.height != null ? incoming.height : current.height,
+            weight: incoming.weight != null ? incoming.weight : current.weight
+        };
+
+        const updateCallback = (error2, results2) => {
+            if (error2) {
+                console.error("Error updateDinosaurById (update):", error2);
+                return res.status(500).json(error2);
+            }
+
+            if (results2.affectedRows === 0) {
+                return res.status(404).json({ message: "Dinosaur not found" });
+            }
+
+            return res.status(200).json({
+                message: "Dinosaur updated",
+                id: dataToUpdate.id,
+                owner_id: dataToUpdate.owner_id,
+                dex_num: dataToUpdate.dex_num,
+                level: dataToUpdate.level,
+                xp: dataToUpdate.xp,
+                height: dataToUpdate.height,
+                weight: dataToUpdate.weight
+            });
+        };
+
+        dinosaurModel.updateById(dataToUpdate, updateCallback);
     };
 
-    dinosaurModel.updateById(data, callback);
+    dinosaurModel.selectById({ id: id }, findCallback);
 };
 
 
+// ##############################################################
+// DELETE DINOSAUR BY ID
+// ##############################################################
 module.exports.deleteDinosaurById = (req, res) => {
 
     const data = { id: req.params.id };
@@ -238,8 +263,14 @@ module.exports.deleteDinosaurById = (req, res) => {
             return res.status(500).json(error);
         }
 
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: "Dinosaur not found" });
+        }
+
         return res.status(204).send();
     };
 
     dinosaurModel.deleteById(data, callback);
 };
+
+console.log("dinosaur controller loaded");

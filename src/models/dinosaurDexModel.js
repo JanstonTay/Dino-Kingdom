@@ -1,10 +1,11 @@
-const pool = require('../services/db');
+const pool = require("../services/db");
 
 
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
-        SELECT * FROM DinosaurDex;
+        SELECT number, name, diet, rarity
+        FROM DinosaurDex;
     `;
 
     pool.query(SQLSTATEMENT, callback);
@@ -14,11 +15,26 @@ module.exports.selectAll = (callback) => {
 module.exports.selectByNumber = (data, callback) => {
 
     const SQLSTATEMENT = `
-        SELECT * FROM DinosaurDex
+        SELECT number, name, diet, rarity
+        FROM DinosaurDex
         WHERE number = ?;
     `;
 
     const VALUES = [data.number];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+};
+
+
+module.exports.selectByName = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        SELECT number
+        FROM DinosaurDex
+        WHERE name = ?;
+    `;
+
+    const VALUES = [data.name];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -41,11 +57,16 @@ module.exports.updateByNumber = (data, callback) => {
 
     const SQLSTATEMENT = `
         UPDATE DinosaurDex
-        SET number = ?, name = ?, diet = ?, rarity = ?
+        SET name = ?, diet = ?, rarity = ?
         WHERE number = ?;
     `;
 
-    const VALUES = [data.new_number, data.name, data.diet, data.rarity, data.old_number];
+    const VALUES = [
+        data.name,
+        data.diet,
+        data.rarity,
+        data.number
+    ];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
