@@ -1,8 +1,5 @@
 const eggTypeModel = require("../models/eggTypeModel.js");
 
-// ##############################################################
-// GET /eggTypes
-// ##############################################################
 module.exports.readAllEggTypes = (req, res) => {
 
     const callback = (error, results) => {
@@ -13,18 +10,18 @@ module.exports.readAllEggTypes = (req, res) => {
         }
 
         return res.status(200).json(results);
+
     };
 
     eggTypeModel.selectAll(callback);
 };
 
 
-// ##############################################################
-// GET /eggTypes/:egg_type_id
-// ##############################################################
 module.exports.readEggTypeById = (req, res) => {
 
-    const data = { egg_type_id: req.params.egg_type_id };
+    const data = { 
+        egg_type_id: req.params.egg_type_id 
+    };
 
     const callback = (error, results) => {
 
@@ -33,8 +30,10 @@ module.exports.readEggTypeById = (req, res) => {
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: "Egg type not found" });
+        if (results.length == 0) {
+            return res.status(404).json({ 
+                message: "Egg type not found" 
+            });
         }
 
         return res.status(200).json(results[0]);
@@ -44,10 +43,6 @@ module.exports.readEggTypeById = (req, res) => {
 };
 
 
-// ##############################################################
-// POST /eggTypes
-// body: { "name": "...", "rarity": "...", "price_points": 100 }
-// ##############################################################
 module.exports.createEggType = (req, res) => {
 
     const data = {
@@ -62,25 +57,27 @@ module.exports.createEggType = (req, res) => {
         });
     }
 
-    const checkData = { name: data.name };
+    const checkData = { 
+        name: data.name 
+    };
 
     const checkCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectByName (createEggType):", error);
+            console.error("Error selectByName:", error);
             return res.status(500).json(error);
         }
 
         if (results.length > 0) {
             return res.status(400).json({
-                message: "Egg type name already exists"
+                message: "Egg type already exists"
             });
         }
 
         const insertCallback = (error2, results2) => {
 
             if (error2) {
-                console.error("Error insertSingle (createEggType):", error2);
+                console.error("Error insertSingle:", error2);
                 return res.status(500).json(error2);
             }
 
@@ -99,9 +96,6 @@ module.exports.createEggType = (req, res) => {
 };
 
 
-// ##############################################################
-// PUT /eggTypes/:egg_type_id
-// ##############################################################
 module.exports.updateEggTypeById = (req, res) => {
 
     const data = {
@@ -124,8 +118,10 @@ module.exports.updateEggTypeById = (req, res) => {
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: "Egg type not found" });
+        if (results.affectedRows == 0) {
+            return res.status(404).json({ 
+                message: "Egg type not found" 
+            });
         }
 
         return res.status(200).json({
@@ -140,12 +136,11 @@ module.exports.updateEggTypeById = (req, res) => {
 };
 
 
-// ##############################################################
-// DELETE /eggTypes/:egg_type_id
-// ##############################################################
 module.exports.deleteEggTypeById = (req, res) => {
 
-    const data = { egg_type_id: req.params.egg_type_id };
+    const data = { 
+        egg_type_id: req.params.egg_type_id 
+    }
 
     const callback = (error, results) => {
 
@@ -154,8 +149,10 @@ module.exports.deleteEggTypeById = (req, res) => {
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: "Egg type not found" });
+        if (results.affectedRows == 0) {
+            return res.status(404).json({ 
+                message: "Egg type not found" 
+            });
         }
 
         return res.status(204).send();
@@ -163,5 +160,6 @@ module.exports.deleteEggTypeById = (req, res) => {
 
     eggTypeModel.deleteById(data, callback);
 };
+
 
 console.log("eggType controller loaded");

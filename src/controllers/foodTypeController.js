@@ -67,7 +67,7 @@ module.exports.createFoodType = (req, res) => {
     const checkCallback = (error, results) => {
 
         if (error) {
-            console.error("Error selectByName (createFoodType):", error);
+            console.error("Error selectByName:", error);
             return res.status(500).json(error);
         }
 

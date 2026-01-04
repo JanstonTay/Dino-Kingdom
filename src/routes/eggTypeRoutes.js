@@ -11,3 +11,4 @@ router.put("/:egg_type_id", controller.updateEggTypeById);
 router.delete("/:egg_type_id", controller.deleteEggTypeById);
 
 module.exports = router;
+

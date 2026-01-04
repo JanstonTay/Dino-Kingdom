@@ -1,6 +1,5 @@
 const pool = require("../services/db");
 
-// SELECT all egg types
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
@@ -12,7 +11,6 @@ module.exports.selectAll = (callback) => {
 };
 
 
-// SELECT egg type by id
 module.exports.selectById = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -27,7 +25,6 @@ module.exports.selectById = (data, callback) => {
 };
 
 
-// SELECT egg type by name (for duplicate check)
 module.exports.selectByName = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -42,7 +39,6 @@ module.exports.selectByName = (data, callback) => {
 };
 
 
-// INSERT egg type
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -56,7 +52,6 @@ module.exports.insertSingle = (data, callback) => {
 };
 
 
-// UPDATE egg type by id
 module.exports.updateById = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -65,18 +60,12 @@ module.exports.updateById = (data, callback) => {
         WHERE egg_type_id = ?;
     `;
 
-    const VALUES = [
-        data.name,
-        data.rarity,
-        data.price_points,
-        data.egg_type_id
-    ];
+    const VALUES = [data.name, data.rarity, data.price_points, data.egg_type_id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
 
 
-// DELETE egg type by id
 module.exports.deleteById = (data, callback) => {
 
     const SQLSTATEMENT = `
@@ -88,3 +77,4 @@ module.exports.deleteById = (data, callback) => {
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
+
