@@ -10,3 +10,4 @@ router.put("/:number", controller.updateDinosaurDexByNumber);
 router.delete("/:number", controller.deleteDinosaurDexByNumber);
 
 module.exports = router;
+

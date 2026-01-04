@@ -1,28 +1,23 @@
 const dinosaurModel = require("../models/dinosaurModel.js");
 const dinosaurDexModel = require("../models/dinosaurDexModel.js");
 
-
-// ##############################################################
-// READ ALL DINOSAURS
-// ##############################################################
 module.exports.readAllDinosaurs = (req, res) => {
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error readAllDinosaurs:", error);
+            console.error("readAllDinosaurs error:", error);
             return res.status(500).json(error);
         }
 
         return res.status(200).json(results);
+
     };
 
     dinosaurModel.selectAll(callback);
 };
 
 
-// ##############################################################
-// CREATE DINOSAUR
-// ##############################################################
 module.exports.createDinosaur = (req, res) => {
 
     const dinosaurData = {
@@ -50,7 +45,7 @@ module.exports.createDinosaur = (req, res) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error createDinosaur:", error);
+            console.error("createDinosaur error:", error);
             return res.status(500).json(error);
         }
 
@@ -58,6 +53,7 @@ module.exports.createDinosaur = (req, res) => {
 
         return res.status(201).json({
             message: "Dinosaur created",
+            
             id: newId,
             owner_id: data.owner_id,
             dex_num: data.dex_num,
@@ -72,20 +68,20 @@ module.exports.createDinosaur = (req, res) => {
 };
 
 
-// ##############################################################
-// READ DINOSAUR BY ID (simple)
-// ##############################################################
 module.exports.readDinosaurById = (req, res) => {
 
-    const data = { id: req.params.id };
+    const data = { 
+        id: req.params.id 
+    };
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error readDinosaurById:", error);
+            console.error("readDinosaurById error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
             return res.status(404).send("Dinosaur not found");
         }
 
@@ -96,35 +92,40 @@ module.exports.readDinosaurById = (req, res) => {
 };
 
 
-// ##############################################################
-// READ DINOSAUR BY ID WITH DEX INFO
-// ##############################################################
 module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
 
-    const data = { id: req.params.id };
+    const data = { 
+        id: req.params.id 
+    }
 
     const dinoCallback = (error, results) => {
+
         if (error) {
-            console.error("Error readDinosaurByIdWithDexInfo (dino):", error);
+            console.error("readDinosaurByIdWithDexInfo error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
             return res.status(404).send("Dinosaur not found");
         }
 
         const dinosaur = results[0];
-        const dexData = { number: dinosaur.dex_num };
 
-        const dexCallback = (error2, dexResults) => {
-            if (error2) {
-                console.error("Error readDinosaurByIdWithDexInfo (dex):", error2);
-                return res.status(500).json(error2);
+        const dexData = { 
+            number: dinosaur.dex_num 
+        }
+
+        const dexCallback = (error, dexResults) => {
+
+            if (error) {
+                console.error("readDinosaurByIdWithDexInfo error:", error);
+                return res.status(500).json(error);
             }
 
             let combined;
 
-            if (dexResults.length === 0) {
+            if (dexResults.length == 0) {
+
                 combined = {
                     id: dinosaur.id,
                     owner_id: dinosaur.owner_id,
@@ -135,7 +136,10 @@ module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
                     weight: dinosaur.weight,
                     dexInfo: "No additional dex info available"
                 };
-            } else {
+
+            } 
+            else {
+
                 const dexInfo = dexResults[0];
 
                 combined = {
@@ -146,6 +150,7 @@ module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
                     xp: dinosaur.xp,
                     height: dinosaur.height,
                     weight: dinosaur.weight,
+
                     dexInfo: {
                         number: dexInfo.number,
                         name: dexInfo.name,
@@ -165,10 +170,7 @@ module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
 };
 
 
-// ##############################################################
-// UPDATE DINOSAUR BY ID  (FIXED)
-// - supports partial updates (only send fields you want to change)
-// ##############################################################
+
 module.exports.updateDinosaurById = (req, res) => {
 
     const id = req.params.id;
@@ -183,7 +185,7 @@ module.exports.updateDinosaurById = (req, res) => {
         weight: req.body.weight
     };
 
-    // If literally nothing is provided, no point updating
+    // If nothing is provided
     if (
         incoming.owner_id == null &&
         incoming.dex_num == null &&
@@ -200,39 +202,54 @@ module.exports.updateDinosaurById = (req, res) => {
     const findCallback = (error, results) => {
 
         if (error) {
-            console.error("Error updateDinosaurById (select):", error);
+            console.error("updateDinosaurById error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: "Dinosaur not found" });
+        if (results.length == 0) {
+            return res.status(404).json({ 
+                message: "Dinosaur not found" 
+            });
         }
 
         const current = results[0];
 
-        // Merge: use incoming value if not null/undefined, else keep current
+
         const dataToUpdate = {
+
             id: current.id,
-            owner_id: incoming.owner_id != null ? incoming.owner_id : current.owner_id,
-            dex_num: incoming.dex_num != null ? incoming.dex_num : current.dex_num,
-            level: incoming.level != null ? incoming.level : current.level,
-            xp: incoming.xp != null ? incoming.xp : current.xp,
-            height: incoming.height != null ? incoming.height : current.height,
-            weight: incoming.weight != null ? incoming.weight : current.weight
+
+            owner_id: (incoming.owner_id != null) ? incoming.owner_id : current.owner_id,
+
+            dex_num: (incoming.dex_num != null) ? incoming.dex_num : current.dex_num,
+
+            level: (incoming.level != null) ? incoming.level : current.level,
+
+            xp: (incoming.xp != null) ? incoming.xp : current.xp,
+
+            height: (incoming.height != null) ? incoming.height : current.height,
+
+            weight: (incoming.weight != null) ? incoming.weight : current.weight
+
         };
 
-        const updateCallback = (error2, results2) => {
-            if (error2) {
-                console.error("Error updateDinosaurById (update):", error2);
-                return res.status(500).json(error2);
+
+        const updateCallback = (error, results) => {
+
+            if (error) {
+                console.error("updateDinosaurById error:", error);
+                return res.status(500).json(error);
             }
 
-            if (results2.affectedRows === 0) {
-                return res.status(404).json({ message: "Dinosaur not found" });
+            if (results.affectedRows == 0) {
+                return res.status(404).json({ 
+                    message: "Dinosaur not found" 
+                });
             }
 
             return res.status(200).json({
                 message: "Dinosaur updated",
+
                 id: dataToUpdate.id,
                 owner_id: dataToUpdate.owner_id,
                 dex_num: dataToUpdate.dex_num,
@@ -250,21 +267,23 @@ module.exports.updateDinosaurById = (req, res) => {
 };
 
 
-// ##############################################################
-// DELETE DINOSAUR BY ID
-// ##############################################################
 module.exports.deleteDinosaurById = (req, res) => {
 
-    const data = { id: req.params.id };
+    const data = { 
+        id: req.params.id 
+    }
 
     const callback = (error, results) => {
+
         if (error) {
-            console.error("Error deleteDinosaurById:", error);
+            console.error("deleteDinosaurById error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: "Dinosaur not found" });
+        if (results.affectedRows == 0) {
+            return res.status(404).json({ 
+                message: "Dinosaur not found" 
+            });
         }
 
         return res.status(204).send();

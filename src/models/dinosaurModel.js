@@ -30,14 +30,7 @@ module.exports.insertSingle = (data, callback) => {
         VALUES (?, ?, ?, ?, ?, ?);
     `;
 
-    const VALUES = [
-        data.owner_id,
-        data.dex_num,
-        data.level,
-        data.xp,
-        data.height,
-        data.weight
-    ];
+    const VALUES = [data.owner_id, data.dex_num, data.level, data.xp, data.height, data.weight];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -51,15 +44,7 @@ module.exports.updateById = (data, callback) => {
         WHERE id = ?;
     `;
 
-    const VALUES = [
-        data.owner_id,
-        data.dex_num,
-        data.level,
-        data.xp,
-        data.height,
-        data.weight,
-        data.id
-    ];
+    const VALUES = [data.owner_id, data.dex_num, data.level, data.xp, data.height, data.weight, data.id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -78,25 +63,17 @@ module.exports.deleteById = (data, callback) => {
 };
 
 
-// still kept in case you ever want it again – but no route uses it now
 module.exports.selectByOwnerIdWithDex = (data, callback) => {
 
     const SQLSTATEMENT = `
         SELECT 
-            d.id AS dinosaur_id,
-            d.owner_id,
-            d.dex_num,
-            d.level,
-            d.xp,
-            d.height,
-            d.weight,
-            dx.number AS dex_number,
-            dx.name,
-            dx.diet,
-            dx.rarity
+
+        d.id AS dinosaur_id, d.owner_id, d.dex_num, d.level, d.xp, d.height, d.weight,
+        dx.number AS dex_number, dx.name, dx.diet, dx.rarity
+
         FROM Dinosaur d
         INNER JOIN DinosaurDex dx
-            ON d.dex_num = dx.number
+        ON d.dex_num = dx.number
         WHERE d.owner_id = ?;
     `;
 
@@ -104,3 +81,4 @@ module.exports.selectByOwnerIdWithDex = (data, callback) => {
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
+
