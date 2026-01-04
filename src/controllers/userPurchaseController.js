@@ -1,13 +1,11 @@
 const pool = require("../services/db");
+
 const userPurchaseModel = require("../models/userPurchaseModel.js");
 const eggTypeModel = require("../models/eggTypeModel.js");
 const foodTypeModel = require("../models/foodTypeModel.js");
 const userEggInventoryModel = require("../models/userEggInventoryModel.js");
 const userFoodInventoryModel = require("../models/userFoodInventoryModel.js");
 
-// ##############################################################
-// GET /userPurchases
-// ##############################################################
 module.exports.readAllUserPurchases = (req, res) => {
 
     const callback = (error, results) => {
@@ -24,12 +22,11 @@ module.exports.readAllUserPurchases = (req, res) => {
 };
 
 
-// ##############################################################
-// GET /userPurchases/user/:user_id
-// ##############################################################
 module.exports.readUserPurchasesByUserId = (req, res) => {
 
-    const data = { user_id: req.params.user_id };
+    const data = { 
+        user_id: req.params.user_id 
+    };
 
     const callback = (error, results) => {
 
@@ -89,18 +86,14 @@ module.exports.createUserPurchase = (req, res) => {
         });
     }
 
-    // ------------------------------------------------------------------
     // 2) Get price_points based on item_type
-    // ------------------------------------------------------------------
     const quantity = Number(data.quantity);
 
     const handlePrice = (pricePerUnit) => {
 
         const totalCost = pricePerUnit * quantity;
 
-        // ------------------------------------------------------------------
         // 3) Check user's current points
-        // ------------------------------------------------------------------
         const userSQL = `
             SELECT user_id, username, points
             FROM User
@@ -132,9 +125,7 @@ module.exports.createUserPurchase = (req, res) => {
 
             const newPoints = userRow.points - totalCost;
 
-            // ------------------------------------------------------------------
             // 4) Deduct points
-            // ------------------------------------------------------------------
             const updateUserSQL = `
                 UPDATE User
                 SET points = ?
@@ -148,9 +139,7 @@ module.exports.createUserPurchase = (req, res) => {
                     return res.status(500).json(updErr);
                 }
 
-                // ------------------------------------------------------------------
                 // 5) Add to inventory
-                // ------------------------------------------------------------------
                 if (data.item_type === "egg") {
 
                     const invKey = {
