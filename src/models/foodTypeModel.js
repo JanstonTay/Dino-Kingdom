@@ -60,13 +60,7 @@ module.exports.updateById = (data, callback) => {
         WHERE food_type_id = ?;
     `;
 
-    const VALUES = [
-        data.name,
-        data.diet,
-        data.xp_gain,
-        data.price_points,
-        data.food_type_id
-    ];
+    const VALUES = [data.name, data.diet, data.xp_gain, data.price_points, data.food_type_id];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
@@ -83,3 +77,4 @@ module.exports.deleteById = (data, callback) => {
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
+

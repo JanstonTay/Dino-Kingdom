@@ -10,3 +10,4 @@ router.put("/:food_type_id", controller.updateFoodTypeById);
 router.delete("/:food_type_id", controller.deleteFoodTypeById);
 
 module.exports = router;
+

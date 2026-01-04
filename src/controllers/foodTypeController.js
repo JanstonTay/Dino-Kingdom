@@ -1,15 +1,12 @@
 const foodTypeModel = require("../models/foodTypeModel.js");
 
 
-// ##############################################################
-// READ ALL FOOD TYPES
-// ##############################################################
 module.exports.readAllFoodTypes = (req, res) => {
 
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error readAllFoodTypes:", error);
+            console.error("readAllFoodTypes error:", error);
             return res.status(500).json(error);
         }
 
@@ -20,23 +17,20 @@ module.exports.readAllFoodTypes = (req, res) => {
 };
 
 
-// ##############################################################
-// READ FOOD TYPE BY ID
-// ##############################################################
 module.exports.readFoodTypeById = (req, res) => {
 
     const data = {
         food_type_id: req.params.food_type_id
-    };
+    }
 
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error readFoodTypeById:", error);
+            console.error("readFoodTypeById error:", error);
             return res.status(500).json(error);
         }
 
-        if (results.length === 0) {
+        if (results.length == 0) {
             return res.status(404).json({
                 message: "Food type not found"
             });
@@ -49,9 +43,6 @@ module.exports.readFoodTypeById = (req, res) => {
 };
 
 
-// ##############################################################
-// CREATE FOOD TYPE (POST)
-// ##############################################################
 module.exports.createFoodType = (req, res) => {
 
     const data = {
@@ -66,6 +57,7 @@ module.exports.createFoodType = (req, res) => {
         return res.status(400).json({
             message: "Missing name or diet or xp_gain or price_points"
         });
+
     }
 
     const checkData = {
@@ -79,36 +71,34 @@ module.exports.createFoodType = (req, res) => {
             return res.status(500).json(error);
         }
 
-        // If a food with this name already exists, reject
         if (results.length > 0) {
             return res.status(409).json({
                 message: "Food type already exists"
             });
         }
 
-        const insertCallback = (error2, results2) => {
+        const insertCallback = (error, results) => {
 
-            if (error2) {
+            if (error) {
 
-                // Extra safety in case DB has UNIQUE(name)
-                if (error2.code === "ER_DUP_ENTRY") {
+                if (error.code === "ER_DUP_ENTRY") {
                     return res.status(409).json({
                         message: "Food type already exists"
                     });
                 }
 
-                console.error("Error createFoodType:", error2);
-                return res.status(500).json(error2);
+                console.error("error createFoodType:", error);
+                return res.status(500).json(error);
             }
 
             return res.status(201).json({
-                food_type_id: results2.insertId,
+                food_type_id: results.insertId,
                 name: data.name,
                 diet: data.diet,
                 xp_gain: data.xp_gain,
                 price_points: data.price_points
             });
-        };
+        }
 
         foodTypeModel.insertSingle(data, insertCallback);
     };
@@ -117,9 +107,6 @@ module.exports.createFoodType = (req, res) => {
 };
 
 
-// ##############################################################
-// UPDATE FOOD TYPE (PUT)
-// ##############################################################
 module.exports.updateFoodTypeById = (req, res) => {
 
     const data = {
@@ -135,6 +122,7 @@ module.exports.updateFoodTypeById = (req, res) => {
         return res.status(400).json({
             message: "Missing name or diet or xp_gain or price_points"
         });
+
     }
 
     const callback = (error, results) => {
@@ -147,11 +135,11 @@ module.exports.updateFoodTypeById = (req, res) => {
                 });
             }
 
-            console.error("Error updateFoodTypeById:", error);
+            console.error("error updateFoodTypeById:", error);
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
+        if (results.affectedRows == 0) {
             return res.status(404).json({
                 message: "Food type not found"
             });
@@ -171,9 +159,6 @@ module.exports.updateFoodTypeById = (req, res) => {
 };
 
 
-// ##############################################################
-// DELETE FOOD TYPE (DELETE)
-// ##############################################################
 module.exports.deleteFoodTypeById = (req, res) => {
 
     const data = {
@@ -183,11 +168,11 @@ module.exports.deleteFoodTypeById = (req, res) => {
     const callback = (error, results) => {
 
         if (error) {
-            console.error("Error deleteFoodTypeById:", error);
+            console.error("error deleteFoodTypeById:", error);
             return res.status(500).json(error);
         }
 
-        if (results.affectedRows === 0) {
+        if (results.affectedRows == 0) {
             return res.status(404).json({
                 message: "Food type not found"
             });
@@ -200,3 +185,4 @@ module.exports.deleteFoodTypeById = (req, res) => {
 };
 
 console.log("foodType controller loaded");
+
