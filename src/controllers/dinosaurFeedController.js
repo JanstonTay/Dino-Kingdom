@@ -314,4 +314,3 @@ module.exports.createFeedEvent = (req, res) => {
 };
 
 console.log("dinosaurFeed controller loaded");
-

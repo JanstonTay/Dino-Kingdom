@@ -118,4 +118,3 @@ module.exports.updateDinosaurStats = (data, callback) => {
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 };
-
