@@ -1,8 +1,7 @@
 {
   "name": "bed-ca1",
   "version": "1.0.0",
-  "description": "Backend wellness-themed progression game where users earn points by completing challenges, purchase eggs and food using those points, hatch dinosaurs, and manage their growth through feeding and inventory mechanics."
-,
+  "description": "Backend wellness-themed progression game where users earn points by completing challenges, purchase eggs and food using those points, hatch dinosaurs, and manage their growth through feeding and inventory mechanics.",
   "main": "index.js",
   "type": "commonjs",
   "dependencies": {
@@ -16,7 +15,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-   "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/ST0503-BED/bed-ca1-JanstonTay.git"
   },
