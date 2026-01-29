@@ -1,5 +1,5 @@
 {
-  "name": "bed-ca1",
+  "name": "bed-ca2",
   "version": "1.0.0",
   "description": "Backend wellness-themed progression game where users earn points by completing challenges, purchase eggs and food using those points, hatch dinosaurs, and manage their growth through feeding and inventory mechanics.",
   "homepage": "https://github.com/ST0503-BED/bed-ca2-JanstonTay#readme",
@@ -20,8 +20,10 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.0",
     "nodemon": "^3.1.11"
   },
