@@ -1,116 +1,144 @@
 const pool = require("../services/db");
-
 const bcrypt = require("bcrypt");
+
 const saltRounds = 10;
 
-const callback = (error, results, fields) => {
-  if (error) {
-    console.error("Error creating tables:", error);
-  } else {
-    console.log("Tables created successfully");
-  }
-  process.exit();
-}
-
-bcrypt.hash('1234', saltRounds, (error, hash) => {
+bcrypt.hash("1234", saltRounds, (error, hash) => {
   if (error) {
     console.error("Error hashing password:", error);
-  } else {
-    console.log("Hashed password:", hash);
-
-    const SQLSTATEMENT = `
-      DROP TABLE IF EXISTS Pokedex;
-
-      DROP TABLE IF EXISTS Pokemon;
-
-      DROP TABLE IF EXISTS Player;
-
-      DROP TABLE IF EXISTS User;
-
-      DROP TABLE IF EXISTS PlayerUserRel;
-
-      CREATE TABLE Pokemon (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        owner_id INT NOT NULL,
-        dex_num INT NOT NULL,
-        hp INT,
-        atk INT,
-        def INT
-      );
-
-      CREATE TABLE Pokedex (
-        number INT PRIMARY KEY,
-        name TEXT NOT NULL,
-        type1 TEXT NOT NULL,
-        type2 TEXT NOT NULL
-      );
-
-      CREATE TABLE Player (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        name TEXT NOT NULL,
-        level INT NOT NULL,
-        created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE TABLE PlayerUserRel (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        user_id INT NOT NULL,
-        player_id INT NOT NULL
-      );
-
-      CREATE TABLE User (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        username TEXT NOT NULL,
-        email TEXT NOT NULL,
-        password TEXT NOT NULL,
-        created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_login_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-      INSERT INTO Pokedex (number, name, type1, type2) VALUES
-      (1, 'Bulbasaur', 'Grass', 'Poison'),
-      (2, 'Ivysaur', 'Grass', 'Poison'),
-      (3, 'Venusaur', 'Grass', 'Poison'),
-      (4, 'Charmander', 'Fire', ''),
-      (5, 'Charmeleon', 'Fire', ''),
-      (6, 'Charizard', 'Fire', 'Flying'),
-      (7, 'Squirtle', 'Water', ''),
-      (8, 'Wartortle', 'Water', ''),
-      (9, 'Blastoise', 'Water', '');
-
-      INSERT INTO Player (name, level) VALUES
-      ('Ash', 1),
-      ('Misty', 21),
-      ('Brock', 30);
-
-      INSERT INTO Pokemon (owner_id, dex_num, hp, atk, def) VALUES
-      (1, 4, 100, 5, 6),
-      (2, 1, 100, 5, 6),
-      (2, 5, 160, 27, 26),
-      (2, 9, 200, 52, 55),
-      (3, 6, 200, 52, 55),
-      (3, 7, 200, 52, 55),
-      (3, 8, 200, 52, 55),
-      (3, 9, 200, 52, 55),
-      (3, 1, 200, 52, 55),
-      (3, 2, 200, 52, 55),
-      (3, 3, 200, 52, 55);
-
-      INSERT INTO User (username, email, password) VALUES
-      ('admin', 'a@a.com', '${hash}');
-
-      INSERT INTO PlayerUserRel (user_id, player_id) VALUES
-      (1, 1),
-      (1, 2),
-      (1, 3);
-
-      SELECT PlayerUserRel.user_id, PlayerUserRel.player_id, User.username, Player.name as character_name, Player.level as character_level, Player.created_on as char_created_on, User.created_on as user_created_on
-      FROM PlayerUserRel
-      INNER JOIN Player ON PlayerUserRel.player_id = Player.id
-      INNER JOIN User ON PlayerUserRel.user_id = User.id;
-      `;
-
-    pool.query(SQLSTATEMENT, callback);
+    process.exit(1);
   }
+
+  console.log("Hashed password:", hash);
+
+  const SQLSTATEMENT = `
+DROP TABLE IF EXISTS DinosaurFeed;
+DROP TABLE IF EXISTS HatchEvent;
+DROP TABLE IF EXISTS UserFoodInventory;
+DROP TABLE IF EXISTS UserEggInventory;
+DROP TABLE IF EXISTS UserCompletion;
+DROP TABLE IF EXISTS WellnessChallenge;
+DROP TABLE IF EXISTS UserPurchase;
+DROP TABLE IF EXISTS Dinosaur;
+DROP TABLE IF EXISTS DinosaurDex;
+DROP TABLE IF EXISTS FoodType;
+DROP TABLE IF EXISTS EggType;
+DROP TABLE IF EXISTS User;
+
+CREATE TABLE User (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  points INT DEFAULT 0
+);
+
+CREATE TABLE WellnessChallenge (
+  challenge_id INT AUTO_INCREMENT PRIMARY KEY,
+  creator_id INT NOT NULL,
+  description TEXT NOT NULL,
+  points INT NOT NULL,
+  FOREIGN KEY (creator_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE UserCompletion (
+  completion_id INT AUTO_INCREMENT PRIMARY KEY,
+  challenge_id INT NOT NULL,
+  user_id INT NOT NULL,
+  details TEXT,
+  FOREIGN KEY (challenge_id) REFERENCES WellnessChallenge(challenge_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE DinosaurDex (
+  number INT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  diet ENUM('herbivore','carnivore','omnivore') NOT NULL,
+  rarity VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Dinosaur (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  dex_num INT NOT NULL,
+  level INT DEFAULT 1,
+  xp INT DEFAULT 0,
+  height FLOAT NOT NULL,
+  weight FLOAT NOT NULL,
+  FOREIGN KEY (owner_id) REFERENCES User(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (dex_num) REFERENCES DinosaurDex(number) ON DELETE CASCADE
+);
+
+CREATE TABLE FoodType (
+  food_type_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  diet ENUM('herbivore','carnivore') NOT NULL,
+  xp_gain INT NOT NULL,
+  price_points INT NOT NULL
+);
+
+CREATE TABLE UserFoodInventory (
+  user_id INT NOT NULL,
+  food_type_id INT NOT NULL,
+  quantity INT NOT NULL,
+  PRIMARY KEY (user_id, food_type_id),
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (food_type_id) REFERENCES FoodType(food_type_id) ON DELETE CASCADE
+);
+
+CREATE TABLE DinosaurFeed (
+  feed_id INT AUTO_INCREMENT PRIMARY KEY,
+  dinosaur_id INT NOT NULL,
+  food_type_id INT NOT NULL,
+  quantity INT NOT NULL,
+  used_on DATETIME NOT NULL,
+  FOREIGN KEY (dinosaur_id) REFERENCES Dinosaur(id) ON DELETE CASCADE,
+  FOREIGN KEY (food_type_id) REFERENCES FoodType(food_type_id) ON DELETE CASCADE
+);
+
+CREATE TABLE EggType (
+  egg_type_id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  rarity VARCHAR(255) NOT NULL,
+  price_points INT NOT NULL
+);
+
+CREATE TABLE UserEggInventory (
+  user_id INT NOT NULL,
+  egg_type_id INT NOT NULL,
+  quantity INT NOT NULL,
+  PRIMARY KEY (user_id, egg_type_id),
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (egg_type_id) REFERENCES EggType(egg_type_id) ON DELETE CASCADE
+);
+
+CREATE TABLE HatchEvent (
+  hatch_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  egg_type_id INT NOT NULL,
+  dinosaur_id INT NOT NULL,
+  hatched_on DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (egg_type_id) REFERENCES EggType(egg_type_id) ON DELETE CASCADE,
+  FOREIGN KEY (dinosaur_id) REFERENCES Dinosaur(id) ON DELETE CASCADE
+);
+
+CREATE TABLE UserPurchase (
+  purchase_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  item_type ENUM('egg','food') NOT NULL,
+  item_id INT NOT NULL,
+  quantity INT NOT NULL,
+  purchased_on DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+`;
+
+  pool.query(SQLSTATEMENT, (err) => {
+    if (err) {
+      console.error("Error creating tables:", err);
+      process.exit(1);
+    }
+
+    console.log("All tables created successfully.");
+    process.exit(0);
+  });
 });
