@@ -1,11 +1,11 @@
 :root
 {
-    --custom-color: #096f2a;
-    --custom-color-darker: #095521;
-    --custom-color-light: #92f7b2;
-    --custom-color-rgb: 9, 111, 42;
-    --custom-color-light-rgb: 146, 247, 178;
-    --custom-text-color: #ffffff;
+    --custom-color: #FAC78E;
+    --custom-color-darker: #FAC78E;
+    --custom-color-light: #FFF0CF;
+    --custom-color-rgb: 250, 199, 142;
+    --custom-color-light-rgb: 255, 240, 178;
+    --custom-text-color: #F26B76;
 }
 
 .accordion

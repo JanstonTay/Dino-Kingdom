@@ -1,6 +1,7 @@
 body {
     font-family: sans-serif;
-    background-color: #dcffef;
+    background-color: #fff0cf;
+    color: var(--custom-text-color);
 }
 
 main {
