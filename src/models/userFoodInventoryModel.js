@@ -14,9 +14,10 @@ module.exports.selectAll = (callback) => {
 module.exports.selectByUserId = (data, callback) => {
 
     const SQLSTATEMENT = `
-        SELECT user_id, food_type_id, quantity
-        FROM UserFoodInventory
-        WHERE user_id = ?;
+        SELECT u.user_id, u.food_type_id, u.quantity, f.name, f.diet, f.xp_gain
+        FROM UserFoodInventory u
+        JOIN FoodType f ON u.food_type_id = f.food_type_id
+        WHERE u.user_id = ?;
     `;
 
     const VALUES = [data.user_id];

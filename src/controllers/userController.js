@@ -7,7 +7,7 @@ module.exports.getAllUsers = (req, res) => {
         if (error) {
             console.error("selectAll error:", error);
             return res.status(500).json(error);
-        } 
+        }
         else {
             return res.status(200).json(results);
         }
@@ -34,7 +34,7 @@ module.exports.getUserById = (req, res) => {
                 message: "User not found"
             });
         }
-        
+
         else {
             return res.status(200).json(results[0]);
         }
@@ -43,51 +43,110 @@ module.exports.getUserById = (req, res) => {
 };
 
 
-module.exports.createUser = (req, res) => {
-
-    const data = {
-        username: req.body.username
-    };
-
-    if (!data.username || data.username == undefined) {
+// Check registration body
+module.exports.checkRegisterBody = (req, res, next) => {
+    if (!req.body.username || !req.body.email || !req.body.password) {
         return res.status(400).json({
-            message: "Missing username"
+            message: "Missing username, email, or password"
         });
     }
+    next();
+};
 
-    const checkUsername = {
-        username: data.username
-    };
 
-    // check if username already exist
-    userModel.selectByUsername(checkUsername, (error, results) => {
+// Check if email already exists
+module.exports.checkEmailExists = (req, res, next) => {
+    const data = { email: req.body.email };
 
+    userModel.selectByEmail(data, (error, results) => {
+        if (error) {
+            console.error("selectByEmail error:", error);
+            return res.status(500).json(error);
+        }
+        if (results.length > 0) {
+            return res.status(409).json({
+                message: "Email already registered"
+            });
+        }
+        next();
+    });
+};
+
+
+// Check if username already exists
+module.exports.checkUsernameExists = (req, res, next) => {
+    const data = { username: req.body.username };
+
+    userModel.selectByUsername(data, (error, results) => {
         if (error) {
             console.error("selectByUsername error:", error);
             return res.status(500).json(error);
         }
-
         if (results.length > 0) {
             return res.status(409).json({
-                message: "Username taken"
+                message: "Username already taken"
+            });
+        }
+        next();
+    });
+};
+
+
+// Create new user (after password hash)
+module.exports.createUser = (req, res, next) => {
+
+    const data = {
+        username: req.body.username,
+        email: req.body.email,
+        password: res.locals.hash
+    };
+
+    userModel.insertSingle(data, (error, results) => {
+
+        if (error) {
+            console.error("insertSingle error:", error);
+            return res.status(500).json(error);
+        }
+        else {
+            res.locals.userId = results.insertId;
+            res.locals.message = "Registration successful";
+            next();
+        }
+
+    });
+};
+
+
+// Check login body
+module.exports.checkLoginBody = (req, res, next) => {
+    if (!req.body.email || !req.body.password) {
+        return res.status(400).json({
+            message: "Missing email or password"
+        });
+    }
+    next();
+};
+
+
+// Get user by email for login
+module.exports.getUserByEmail = (req, res, next) => {
+    const data = { email: req.body.email };
+
+    userModel.selectByEmail(data, (error, results) => {
+        if (error) {
+            console.error("selectByEmail error:", error);
+            return res.status(500).json(error);
+        }
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: "User not found"
             });
         }
 
-        userModel.insertSingle(data, (error, results) => {
-
-            if (error) {
-                console.error("insertSingle error:", error);
-                return res.status(500).json(error);
-            } 
-            else {
-                return res.status(201).json({
-                    user_id: results.insertId,
-                    username: data.username,
-                    points: 0
-                });
-            }
-
-        });
+        res.locals.userId = results[0].user_id;
+        res.locals.hash = results[0].password;
+        res.locals.message = "Login successful";
+        next();
     });
 };
 
@@ -163,3 +222,4 @@ module.exports.updateUserById = (req, res) => {
 };
 
 console.log("user controller loaded");
+

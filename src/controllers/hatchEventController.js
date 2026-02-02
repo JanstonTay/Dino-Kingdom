@@ -24,8 +24,8 @@ module.exports.readAllHatchEvents = (req, res) => {
 
 module.exports.readHatchEventsByUserId = (req, res) => {
 
-    const data = { 
-        user_id: req.params.user_id 
+    const data = {
+        user_id: req.params.user_id
     };
 
     const callback = (error, results) => {
@@ -194,7 +194,9 @@ module.exports.createHatchEvent = (req, res) => {
                                 dinosaur_id: dinosaur_id,
                                 hatched_on: hatched_on,
                                 dex_num: chosenDexNum,
+                                name: chosenDex.name,
                                 rarity: eggRarity,
+                                diet: chosenDex.diet,
                                 height: randomHeight,
                                 weight: randomWeight
                             });

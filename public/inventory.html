@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Dinosaur Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">DinoKingdom</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="dinosaur.html" class="nav-link">My Dinos</a></li>
+            <li><a href="dinodex.html" class="nav-link">DinoDex</a></li>
+            <li><a href="shop.html" class="nav-link">Shop</a></li>
+            <li><a href="inventory.html" class="nav-link active">Inventory</a></li>
+            <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+            <li><a href="login.html" class="nav-link" id="authLink">Login</a></li>
+        </ul>
+    </nav>
+
+    <main class="container fade-in">
+        <div class="mb-4 text-center">
+            <h2>Inventory</h2>
+            <p class="text-muted">Manage your gathered resources</p>
+        </div>
+
+        <div class="tabs" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+            <button class="btn btn-primary" onclick="switchTab('eggs')" id="eggTab">My Eggs</button>
+            <button class="btn btn-outline" onclick="switchTab('food')" id="foodTab">My Food</button>
+        </div>
+
+        <div id="inventoryGrid" class="card-grid">
+            <!-- Items injected here -->
+        </div>
+    </main>
+
+    <!-- Hatching Modal -->
+    <div id="hatchModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column;">
+        <div id="hatchContent" style="text-align: center;">
+            <img id="hatchEggImg" src="" alt="Egg"
+                style="width: 250px; height: auto; cursor: pointer; transition: transform 0.3s ease;">
+            <p id="hatchInstruction" style="margin-top: 1rem; color: var(--primary-color); font-size: 1.2rem;">Click the
+                egg to hatch! (3 clicks)</p>
+            <p id="clickCounter" style="color: var(--text-muted);">Clicks: 0/3</p>
+        </div>
+        <div id="hatchResult" style="display: none; text-align: center;">
+            <img id="dinosaurResultImg" src="" alt="Dinosaur" style="width: 300px; height: auto;">
+            <h2 id="dinosaurName" style="margin-top: 1rem; color: var(--primary-color);"></h2>
+            <p id="dinosaurInfo" style="color: var(--text-muted);"></p>
+            <button id="closeHatchBtn" class="btn btn-primary" style="margin-top: 1.5rem;">Continue</button>
+        </div>
+    </div>
+
+    <script src="js/queryCmds.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

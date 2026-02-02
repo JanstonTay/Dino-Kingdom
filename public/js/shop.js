@@ -1,201 +1,196 @@
-      // =========================
-      // 1) CHANGE ONLY THESE URLs
-      // =========================
-      const BASE_URL = "http://localhost:3000"; // change if your backend differs
+document.addEventListener('DOMContentLoaded', () => {
+  const userId = localStorage.getItem('user_id');
+  const token = localStorage.getItem('token');
+  const pointsDisplay = document.getElementById('pointsDisplay');
+  const userBalanceDiv = document.getElementById('userBalance');
+  const shopGrid = document.getElementById('shopGrid');
 
-      // GET lists:
-      const EGGS_URL = `${BASE_URL}/shop/eggs`;   // e.g. /shop/eggs
-      const FOOD_URL = `${BASE_URL}/shop/food`;   // e.g. /shop/food
+  let currentTab = 'eggs';
 
-      // POST buy:
-      const BUY_EGG_URL = `${BASE_URL}/shop/buy/egg`;   // e.g. /shop/buy/egg
-      const BUY_FOOD_URL = `${BASE_URL}/shop/buy/food`; // e.g. /shop/buy/food
+  // Image mappings based on food names
+  const foodImages = {
+    'Raw Meat': 'images/food/rawMeat.png',
+    'Fresh Fish': 'images/food/freshFish.png',
+    'Prime Steak': 'images/food/primeSteak.png',
+    'Leafy Green': 'images/food/leafyGreen.png',
+    'Ancient Fern': 'images/food/ancientFern.png',
+    'Fruit Mix': 'images/food/fruitMix.png'
+  };
 
-      // Where token is stored (common pattern)
-      const token = localStorage.getItem("token");
+  // Egg image mappings based on rarity
+  const eggImages = {
+    'Common': 'images/eggs/commonEgg1.png',
+    'Rare': 'images/eggs/rareEgg1.png',
+    'Epic': 'images/eggs/epicEgg1.png',
+    'Legendary': 'images/eggs/legendaryEgg1.png'
+  };
 
-      // =========================
-      // Helpers
-      // =========================
-      const eggsGrid = document.getElementById("eggsGrid");
-      const foodGrid = document.getElementById("foodGrid");
-      const eggsStatus = document.getElementById("eggsStatus");
-      const foodStatus = document.getElementById("foodStatus");
-      const eggsCount = document.getElementById("eggsCount");
-      const foodCount = document.getElementById("foodCount");
-      const globalAlert = document.getElementById("globalAlert");
+  // Initial Load
+  if (userId && token) {
+    userBalanceDiv.style.display = 'block';
+    fetchUserPoints();
+  }
 
-      function showGlobalAlert(type, message) {
-        globalAlert.className = `alert alert-${type}`;
-        globalAlert.textContent = message;
-        globalAlert.classList.remove("d-none");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+  loadShopItems('eggs');
+
+  window.switchTab = (tab) => {
+    currentTab = tab;
+
+    // Update UI
+    document.getElementById('eggTab').classList.toggle('btn-primary', tab === 'eggs');
+    document.getElementById('eggTab').classList.toggle('btn-outline', tab !== 'eggs');
+    document.getElementById('foodTab').classList.toggle('btn-primary', tab === 'food');
+    document.getElementById('foodTab').classList.toggle('btn-outline', tab !== 'food');
+
+    loadShopItems(tab);
+  }
+
+  // Set initial active state
+  window.switchTab('eggs');
+
+  function fetchUserPoints() {
+    if (!userId) return;
+    fetchMethod(`/api/users/${userId}`, (status, data) => {
+      if (status === 200) {
+        pointsDisplay.textContent = data.points;
+      }
+    });
+  }
+
+  function loadShopItems(type) {
+    shopGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">Loading...</p>';
+
+    const endpoint = type === 'eggs' ? '/api/eggTypes' : '/api/foodTypes';
+
+    fetchMethod(endpoint, (status, items) => {
+      console.log('Shop items response:', status, items);
+
+      if (status === 200 && Array.isArray(items)) {
+        renderItems(items, type);
+      } else {
+        shopGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">Failed to load items. Please try again.</p>';
+      }
+    });
+  }
+
+  function renderItems(items, type) {
+    shopGrid.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      shopGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">No items available.</p>';
+      return;
+    }
+
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card fade-in';
+      card.style.textAlign = 'center';
+
+      const itemId = type === 'eggs' ? item.egg_type_id : item.food_type_id;
+      const price = item.price_points || 0;
+
+      // Get appropriate image
+      let imgSrc = '';
+      if (type === 'eggs') {
+        imgSrc = eggImages[item.rarity] || 'images/eggs/commonEgg1.png';
+      } else {
+        imgSrc = foodImages[item.name] || '';
       }
 
-      function clearGlobalAlert() {
-        globalAlert.classList.add("d-none");
+      // XP info for food
+      let xpInfo = '';
+      if (type === 'food' && item.xp_gain) {
+        xpInfo = `<div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 0.5rem;">+${item.xp_gain} XP</div>`;
       }
 
-      function safeText(v) {
-        return (v === null || v === undefined) ? "" : String(v);
+      // Diet info for food
+      let dietInfo = '';
+      if (type === 'food' && item.diet) {
+        dietInfo = `<div style="font-size: 0.8rem; color: var(--text-muted);">Diet: ${item.diet}</div>`;
       }
 
-      function formatPrice(v) {
-        if (v === null || v === undefined) return "-";
-        const num = Number(v);
-        return Number.isFinite(num) ? `$${num.toFixed(2)}` : safeText(v);
+      // Rarity info for eggs
+      let rarityInfo = '';
+      if (type === 'eggs' && item.rarity) {
+        let rarityColor = '#a0aec0';
+        if (item.rarity === 'Rare') rarityColor = '#4299e1';
+        if (item.rarity === 'Epic') rarityColor = '#9f7aea';
+        if (item.rarity === 'Legendary') rarityColor = '#ed8936';
+        rarityInfo = `<span style="font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid ${rarityColor}; color: ${rarityColor};">${item.rarity}</span>`;
       }
 
-      // =========================
-      // Rendering
-      // Expecting each item object to have (any of these):
-      // - name/title
-      // - description
-      // - price
-      // - image (optional)
-      // - id (optional)
-      // =========================
-      function renderItemCard(item, type) {
-        const name = item.name || item.title || `${type} Item`;
-        const desc = item.description || item.desc || "";
-        const price = item.price ?? item.cost ?? item.amount;
+      card.innerHTML = `
+                <div style="height: 150px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem;">
+                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="font-size:3rem;">🥚</span>'}
+                </div>
+                <h3>${item.name}</h3>
+                ${rarityInfo}
+                ${xpInfo}
+                ${dietInfo}
+                <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; color: var(--primary-color);">${price} pts</span>
+                    <button class="btn btn-outline purchase-btn" 
+                        data-type="${type === 'eggs' ? 'egg' : 'food'}" 
+                        data-id="${itemId}" 
+                        data-price="${price}"
+                        data-name="${item.name}">
+                        Buy
+                    </button>
+                </div>
+            `;
 
-        // If your backend returns image paths, use it.
-        // If not, it will just show "No image".
-        const img = item.image || item.img || "";
+      shopGrid.appendChild(card);
+    });
 
-        const col = document.createElement("div");
-        col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
+    // Add event listeners to buttons
+    document.querySelectorAll('.purchase-btn').forEach(btn => {
+      btn.addEventListener('click', handlePurchase);
+    });
+  }
 
-        col.innerHTML = `
-          <div class="soft-card p-3 d-flex flex-column">
-            ${
-              img
-                ? `<img src="${img}" alt="${safeText(name)}" class="item-img" />`
-                : `<div class="item-img d-flex align-items-center justify-content-center text-muted border rounded">
-                     No image
-                   </div>`
-            }
+  function handlePurchase(e) {
+    if (!userId || !token) {
+      alert('Please login to purchase items.');
+      window.location.href = 'login.html';
+      return;
+    }
 
-            <div class="mt-2">
-              <div class="fw-semibold">${safeText(name)}</div>
-              ${desc ? `<div class="text-muted small mt-1">${safeText(desc)}</div>` : ""}
-              <div class="mt-2"><span class="text-muted small">Price:</span> <span class="fw-semibold">${formatPrice(price)}</span></div>
-            </div>
+    const btn = e.target;
+    const itemType = btn.dataset.type;
+    const itemId = btn.dataset.id;
+    const itemName = btn.dataset.name;
+    const itemPrice = parseInt(btn.dataset.price);
 
-            <div class="mt-auto pt-3">
-              <button class="btn btn-green text-white w-100 btn-buy">Buy</button>
-            </div>
-          </div>
-        `;
+    // Optimistic check
+    const currentPoints = parseInt(pointsDisplay.textContent);
+    if (currentPoints < itemPrice) {
+      alert('Not enough points!');
+      return;
+    }
 
-        // buy handler
-        col.querySelector(".btn-buy").addEventListener("click", () => {
-          if (type === "Egg") buyEgg(item);
-          else buyFood(item);
-        });
+    if (!confirm(`Buy ${itemName} for ${itemPrice} points?`)) return;
 
-        return col;
+    btn.disabled = true;
+    btn.textContent = 'Buying...';
+
+    const data = {
+      user_id: parseInt(userId),
+      item_type: itemType,
+      item_id: parseInt(itemId),
+      quantity: 1
+    };
+
+    fetchMethod('/api/userPurchases', (status, response) => {
+      if (status === 201) {
+        alert('Purchase successful!');
+        fetchUserPoints(); // Refresh points
+        btn.textContent = 'Buy';
+        btn.disabled = false;
+      } else {
+        alert(`Purchase failed: ${response.message || 'Unknown error'}`);
+        btn.textContent = 'Buy';
+        btn.disabled = false;
       }
-
-      // =========================
-      // Fetch lists
-      // =========================
-      function loadEggs() {
-        eggsStatus.textContent = "Loading eggs...";
-        eggsGrid.innerHTML = "";
-        clearGlobalAlert();
-
-        fetchMethod(EGGS_URL, (status, data) => {
-          if (status >= 200 && status < 300) {
-            // Accept either array OR { items: [...] }
-            const items = Array.isArray(data) ? data : (data.items || data.eggs || []);
-            eggsCount.textContent = items.length;
-
-            if (!items.length) {
-              eggsStatus.textContent = "No eggs found.";
-              return;
-            }
-
-            eggsStatus.textContent = "";
-            items.forEach((item) => eggsGrid.appendChild(renderItemCard(item, "Egg")));
-          } else {
-            eggsStatus.textContent = "";
-            showGlobalAlert("danger", `Failed to load eggs (HTTP ${status}). Check EGGS_URL endpoint.`);
-          }
-        });
-      }
-
-      function loadFood() {
-        foodStatus.textContent = "Loading food...";
-        foodGrid.innerHTML = "";
-        clearGlobalAlert();
-
-        fetchMethod(FOOD_URL, (status, data) => {
-          if (status >= 200 && status < 300) {
-            const items = Array.isArray(data) ? data : (data.items || data.food || []);
-            foodCount.textContent = items.length;
-
-            if (!items.length) {
-              foodStatus.textContent = "No food found.";
-              return;
-            }
-
-            foodStatus.textContent = "";
-            items.forEach((item) => foodGrid.appendChild(renderItemCard(item, "Food")));
-          } else {
-            foodStatus.textContent = "";
-            showGlobalAlert("danger", `Failed to load food (HTTP ${status}). Check FOOD_URL endpoint.`);
-          }
-        });
-      }
-
-      // =========================
-      // Buy actions (POST)
-      // You may need to adjust request body keys based on backend
-      // =========================
-      function buyEgg(item) {
-        clearGlobalAlert();
-
-        // Common body patterns: { id }, { eggId }, or { itemId }
-        const body = { id: item.id ?? item.eggId ?? item.itemId ?? null };
-
-        fetchMethod(BUY_EGG_URL, (status, data) => {
-          if (status >= 200 && status < 300) {
-            showGlobalAlert("success", data.message || "Egg purchased!");
-            // Optionally refresh inventory counts later
-          } else if (status === 401 || status === 403) {
-            showGlobalAlert("warning", "You must be logged in to buy items.");
-          } else {
-            showGlobalAlert("danger", data.message || `Failed to buy egg (HTTP ${status}).`);
-          }
-        }, "POST", body, token);
-      }
-
-      function buyFood(item) {
-        clearGlobalAlert();
-
-        const body = { id: item.id ?? item.foodId ?? item.itemId ?? null };
-
-        fetchMethod(BUY_FOOD_URL, (status, data) => {
-          if (status >= 200 && status < 300) {
-            showGlobalAlert("success", data.message || "Food purchased!");
-          } else if (status === 401 || status === 403) {
-            showGlobalAlert("warning", "You must be logged in to buy items.");
-          } else {
-            showGlobalAlert("danger", data.message || `Failed to buy food (HTTP ${status}).`);
-          }
-        }, "POST", body, token);
-      }
-
-      // =========================
-      // Buttons
-      // =========================
-      document.getElementById("refreshEggsBtn").addEventListener("click", loadEggs);
-      document.getElementById("refreshFoodBtn").addEventListener("click", loadFood);
-
-      // =========================
-      // Init
-      // =========================
-      loadEggs();
-      loadFood();
+    }, 'POST', data, token);
+  }
+});

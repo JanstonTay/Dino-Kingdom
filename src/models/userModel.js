@@ -3,7 +3,7 @@ const pool = require('../services/db');
 module.exports.selectAll = (callback) => {
 
     const SQLSTATEMENT = `
-        SELECT user_id, username, points FROM User;
+        SELECT user_id, username, email, points FROM User;
     `;
 
     pool.query(SQLSTATEMENT, callback);
@@ -13,7 +13,7 @@ module.exports.selectAll = (callback) => {
 module.exports.selectByUserId = (data, callback) => {
 
     const SQLSTATEMENT = `
-        SELECT user_id, username, points FROM User
+        SELECT user_id, username, email, points FROM User
         WHERE user_id = ?;
     `;
 
@@ -26,7 +26,7 @@ module.exports.selectByUserId = (data, callback) => {
 module.exports.selectByUsername = (data, callback) => {
 
     const SQLSTATEMENT = `
-        SELECT user_id, username, points FROM User
+        SELECT user_id, username, email, points FROM User
         WHERE username = ?;
     `;
 
@@ -36,14 +36,27 @@ module.exports.selectByUsername = (data, callback) => {
 }
 
 
+module.exports.selectByEmail = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        SELECT user_id, username, email, password, points FROM User
+        WHERE email = ?;
+    `;
+
+    const VALUES = [data.email];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+}
+
+
 module.exports.insertSingle = (data, callback) => {
 
     const SQLSTATEMENT = `
-        INSERT INTO User (username, points)
-        VALUES (?, 0);
+        INSERT INTO User (username, email, password, points)
+        VALUES (?, ?, ?, 0);
     `;
 
-    const VALUES = [data.username];
+    const VALUES = [data.username, data.email, data.password];
 
     pool.query(SQLSTATEMENT, VALUES, callback);
 }

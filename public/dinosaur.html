@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dinos - Dinosaur Kingdom</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">DinoKingdom</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="dinosaur.html" class="nav-link active">My Dinos</a></li>
+            <li><a href="dinodex.html" class="nav-link">DinoDex</a></li>
+            <li><a href="shop.html" class="nav-link">Shop</a></li>
+            <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+            <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+            <li><a href="login.html" class="nav-link" id="authLink">Login</a></li>
+        </ul>
+    </nav>
+
+    <main class="container fade-in">
+        <div class="mb-4 text-center">
+            <h2>Your Habitat</h2>
+            <p class="text-muted">Manage the growth of your prehistoric companions</p>
+        </div>
+
+        <div id="habitatGrid" class="card-grid">
+            <!-- Dinos injected here -->
+        </div>
+    </main>
+
+    <!-- Feed Modal -->
+    <div id="feedModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 90%; max-width: 500px; position: relative;">
+            <button id="closeModal"
+                style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h3 class="mb-2">Select Food</h3>
+            <p class="text-muted mb-4">Choose food from your inventory to feed your dinosaur.</p>
+
+            <div id="foodSelectContainer">
+                Loading food...
+            </div>
+
+            <div class="mt-4 text-center">
+                <button id="confirmFeedBtn" class="btn btn-primary" disabled>Feed Dino</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/queryCmds.js"></script>
+    <script src="js/dinosaur.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

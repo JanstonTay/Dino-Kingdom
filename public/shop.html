@@ -1,90 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shop</title>
 
-    <!-- Bootstrap -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="css/shop.css" rel="stylesheet" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - Dinosaur Kingdom</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
 
-  </head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">DinoKingdom</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="dinosaur.html" class="nav-link">My Dinos</a></li>
+      <li><a href="dinodex.html" class="nav-link">DinoDex</a></li>
+      <li><a href="shop.html" class="nav-link active">Shop</a></li>
+      <li><a href="inventory.html" class="nav-link">Inventory</a></li>
+      <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+      <li><a href="login.html" class="nav-link" id="authLink">Login</a></li>
+    </ul>
+  </nav>
 
-  <body>
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background:#0b6b2a;">
-      <div class="container">
-        <a class="navbar-brand fw-semibold" href="index.html">Dinosaur Kingdom</a>
-
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#mainNav"
-          aria-controls="mainNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="mainNav">
-          <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3">
-            <li class="nav-item"><a class="nav-link" href="dinosaur.html">Dinosaur</a></li>
-            <li class="nav-item"><a class="nav-link" href="dinodex.html">DinosaurDex</a></li>
-            <li class="nav-item"><a class="nav-link active" href="shop.html">Shop</a></li>
-            <li class="nav-item"><a class="nav-link" href="inventory.html">Inventory</a></li>
-            <li class="nav-item"><a class="nav-link" href="challenges.html">Challenges</a></li>
-          </ul>
-
-          <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
-            <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-            <li class="nav-item">
-              <a class="btn btn-dark btn-sm" href="register.html">Register!</a>
-            </li>
-          </ul>
-        </div>
+  <main class="container fade-in">
+    <div class="mb-4 text-center">
+      <h2>Marketplace</h2>
+      <p class="text-muted">Purchase eggs and food for your dinosaurs</p>
+      <div id="userBalance" class="mt-3" style="font-size: 1.2rem; display: none;">
+        Balance: <span id="pointsDisplay" style="color: var(--primary-color); font-weight: bold;">0</span> Points
       </div>
-    </nav>
+    </div>
 
-    <main class="container py-5">
-      <div class="text-center mb-4">
-        <h1 class="display-5 page-title">Shop</h1>
-        <p class="text-muted mb-0">Buy dinosaur eggs and food.</p>
-      </div>
+    <div class="tabs" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+      <button class="btn btn-outline active-tab" onclick="switchTab('eggs')" id="eggTab">Dino Eggs</button>
+      <button class="btn btn-outline" onclick="switchTab('food')" id="foodTab">Food Supply</button>
+    </div>
 
-      <!-- Global status -->
-      <div id="globalAlert" class="alert d-none" role="alert"></div>
+    <div id="shopGrid" class="card-grid">
+      <!-- Items injected here -->
+    </div>
+  </main>
 
-      <!-- EGGS -->
-      <div class="section-head mt-4 mb-2">
-        <h2 class="h4 mb-0">Eggs <span id="eggsCount" class="badge badge-soft ms-2">0</span></h2>
-        <button id="refreshEggsBtn" class="btn btn-outline-dark btn-sm">Refresh</button>
-      </div>
-      <div id="eggsStatus" class="text-muted small mb-2"></div>
-      <div id="eggsGrid" class="row g-4"></div>
+  <script src="js/queryCmds.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/main.js"></script>
+</body>
 
-      <hr class="my-5" />
-
-      <!-- FOOD -->
-      <div class="section-head mb-2">
-        <h2 class="h4 mb-0">Food <span id="foodCount" class="badge badge-soft ms-2">0</span></h2>
-        <button id="refreshFoodBtn" class="btn btn-outline-dark btn-sm">Refresh</button>
-      </div>
-      <div id="foodStatus" class="text-muted small mb-2"></div>
-      <div id="foodGrid" class="row g-4"></div>
-    </main>
-
-    <!-- Bootstrap bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Your fetch wrapper -->
-    <script src="js/queryCmds.js"></script>
-    <script src="js/shop.js"></script>
-
-  </body>
 </html>
