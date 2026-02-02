@@ -2,125 +2,201 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dinosaur Kingdom</title>
 
-    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-      crossorigin="anonymous"
     />
 
-    <link href="css/style.css" rel="stylesheet" />
-    <link href="css/color.css" rel="stylesheet" />
+    <style>
+      /* ===== B: GAME-LIKE BUT SIMPLE ===== */
 
-    <title>Home</title>
+      body {
+        background: #f6f7f9;
+      }
+
+      /* HERO */
+      .hero {
+        position: relative;
+        min-height: 70vh;
+        background:
+          linear-gradient(
+            rgba(10, 15, 20, 0.65),
+            rgba(10, 15, 20, 0.65)
+          ),
+          url("https://images.unsplash.com/photo-1616627989753-48fdc6e86a98");
+        background-size: cover;
+        background-position: center;
+        color: white;
+        display: flex;
+        align-items: center;
+      }
+
+      .hero h1 {
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+
+      .hero p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      /* CTA BUTTON */
+      .btn-cta {
+        padding: 14px 32px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      /* SOFT CARDS */
+      .card-soft {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+      }
+
+      /* SECTION TITLE */
+      .section-title {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .section-subtitle {
+        color: #6b7280;
+      }
+    </style>
   </head>
-  <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <body>
+    <!-- NAVBAR (still simple) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="index.html"
-          ><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png"
-            class="logo img-fluid"
-        /></a>
+        <a class="navbar-brand fw-bold" href="index.html">
+          Dinosaur Kingdom
+        </a>
+
         <button
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
+          data-bs-target="#mainNav"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <!-- me-auto: margin-right: auto -->
-          <ul class="navbar-nav me-auto">
+
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav mx-auto gap-lg-3">
             <li class="nav-item">
-              <a class="nav-link" href="index.html">Home</a>
+              <a class="nav-link" href="dinosaur.html">Dinosaur</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="players.html">Players</a>
+              <a class="nav-link" href="dinodex.html">DinosaurDex</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="pokemons.html">Pokemons</a>
+              <a class="nav-link" href="shop.html">Shop</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="pokedex.html">Pokedex</a>
+              <a class="nav-link" href="inventory.html">Inventory</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="users.html">Users</a>
+              <a class="nav-link" href="challenges.html">Challenges</a>
             </li>
           </ul>
-        </div>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <!-- ms-auto: margin-left: auto -->
-          <ul class="navbar-nav ms-auto">
+
+          <ul class="navbar-nav ms-auto gap-2">
             <li class="nav-item">
-              <a id="profileButton" href="/profile.html" class="nav-link">Profile</a>
+              <a class="nav-link" href="login.html">Login</a>
             </li>
             <li class="nav-item">
-              <a id="logoutButton" href="#" class="nav-link">Logout</a>
-            </li>
-            <li class="nav-item">
-              <a id="loginButton" href="/login.html" class="nav-link">Login</a>
-            </li>
-            <li>
-              <div class="btn-nav">
-                <a id="registerButton" class="btn text-bg-dark btn-small navbar-btn" href="/register.html"
-                  >Register!</a
-                >
-              </div>
+              <a class="btn btn-outline-light btn-sm" href="register.html">
+                Register
+              </a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
 
-    <main class="py-4">
+
+
+    <!-- HERO -->
+    <header class="hero">
       <div class="container">
         <div class="row">
-          <div class="col-12">
-            <h1 class="text-center">Pokemons Created</h1>
+          <div class="col-12 col-lg-8">
+            <h1 class="display-4 mb-3">DINOSAUR KINGDOM</h1>
+            <p class="mb-4">
+              Raise powerful dinosaurs, manage your inventory, and compete with others.
+            </p>
+            <a href="#" class="btn btn-primary btn-lg btn-cta">
+              Start Game
+            </a>
           </div>
         </div>
       </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="py-5">
       <div class="container">
-        <div id="pokemonList" class="row"></div>
+        <div class="mb-4">
+          <h2 class="section-title mb-1">Explore the Kingdom</h2>
+          <div class="section-subtitle">
+            Search, filter, and discover dinosaurs.
+          </div>
+        </div>
+
+        <!-- SEARCH / FILTER -->
+        <div class="card card-soft p-3 mb-4">
+          <div class="row g-2">
+            <div class="col-12 col-md-6">
+              <input class="form-control" placeholder="Search dinosaurs..." />
+            </div>
+            <div class="col-6 col-md-3">
+              <select class="form-select">
+                <option selected>Type</option>
+                <option>Carnivore</option>
+                <option>Herbivore</option>
+                <option>Omnivore</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <select class="form-select">
+                <option selected>Rarity</option>
+                <option>Common</option>
+                <option>Rare</option>
+                <option>Epic</option>
+                <option>Legendary</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARDS GRID -->
+        <div class="row g-4">
+          <!-- Replace with your actual cards -->
+          <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card card-soft p-3">
+              <div class="fw-semibold">Example Dinosaur</div>
+              <div class="text-secondary small">Stats, rarity, etc.</div>
+              <div class="mt-3">
+                <button class="btn btn-outline-primary btn-sm">View</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
-    <footer class="mt-auto py-3 bg-primary text-bg-primary text-center">
-      <p class="m-0 py-0 px-4">
-        Created by Mr Siah Peih Wee for Educational Purposes in Backend
-        Development. Pokémon and Pokémon character names are trademarks of Nintendo. Artworks are from
-        <a class="link-light" href="https://pokeapi.co/" target="_blank"
-          >PokeAPI</a
-        >
-      </p>
+    <footer class="py-4 border-top">
+      <div class="container text-center text-secondary small">
+        © Dinosaur Kingdom
+      </div>
     </footer>
 
-    <!-- ADD JAVASCRIPTS BEFORE BODY ENDTAG -->
-     <script
-      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-      crossorigin="anonymous"
-></script>
-<script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
-      integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
-      crossorigin="anonymous"
-></script>
-
-<script src="js/queryCmds.js" type="text/javascript"></script>
-<script src="js/getCurrentURL.js" type="text/javascript"></script>
-<script src="js/showAllPokemonBasic.js" type="text/javascript"></script>
-<script src="js/userNavbarToggle.js" type="text/javascript"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
-
