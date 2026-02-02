@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dinosaurInfo = document.getElementById('dinosaurInfo');
     const closeHatchBtn = document.getElementById('closeHatchBtn');
 
+    
     // Image mappings
     const foodImages = {
         'Raw Meat': 'images/food/rawMeat.png',
