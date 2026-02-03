@@ -4,17 +4,17 @@ const pool = require("../services/db");
 const dinosaurDexData = `
 INSERT INTO DinosaurDex (number, name, diet, rarity) VALUES
 (1, 'Tyrannosaurus Rex', 'omnivore', 'Legendary'),
-(2, 'Brachiosaurus', 'carnivore', 'Epic'),
+(2, 'Brachiosaurus', 'carnivore', 'Legendary'),
 (3, 'Mosasaurus', 'carnivore', 'Epic'),
 (4, 'Stegosaurus', 'carnivore', 'Rare'),
-(5, 'Elasmosaurus', 'carnivore', 'Rare'),
-(6, 'Pterodactyl', 'omnivore', 'Common'),
+(5, 'Elasmosaurus', 'carnivore', 'Epic'),
+(6, 'Pterodactyl', 'omnivore', 'Rare'),
 (7, 'Triceratops', 'herbivore', 'Common'),
-(8, 'Spinosaurus', 'omnivore', 'Legendary'),
-(9, 'Diplodocus', 'herbivore', 'Rare'),
+(8, 'Spinosaurus', 'omnivore', 'Common'),
+(9, 'Diplodocus', 'herbivore', 'Common'),
 (10, 'Velociraptor', 'omnivore', 'Common'),
 (11, 'Acanthopholis', 'herbivore', 'Epic'),
-(12, 'Parasaurolophus', 'herbivore', 'Legendary');
+(12, 'Parasaurolophus', 'herbivore', 'Rare');
 `;
 
 // Seed data for EggTypes (4 egg types based on user's image)
