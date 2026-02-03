@@ -7,7 +7,7 @@ module.exports.getAllUsers = (req, res) => {
         if (error) {
             console.error("selectAll error:", error);
             return res.status(500).json(error);
-        }
+        } 
         else {
             return res.status(200).json(results);
         }
@@ -34,7 +34,7 @@ module.exports.getUserById = (req, res) => {
                 message: "User not found"
             });
         }
-
+        
         else {
             return res.status(200).json(results[0]);
         }
@@ -43,119 +43,68 @@ module.exports.getUserById = (req, res) => {
 };
 
 
-// Check registration body
-module.exports.checkRegisterBody = (req, res, next) => {
-    if (!req.body.username || !req.body.email || !req.body.password) {
+// ##############################################################
+// CREATE USER MIDDLEWARE
+// ##############################################################
+
+module.exports.checkForExistingUsername = (req, res, next) => {
+    const data = {
+        username: req.body.username
+    };
+
+    if (!data.username) {
         return res.status(400).json({
-            message: "Missing username, email, or password"
+            message: "Missing username"
         });
     }
-    next();
-};
 
+    const checkUsername = {
+        username: data.username
+    };
 
-// Check if email already exists
-module.exports.checkEmailExists = (req, res, next) => {
-    const data = { email: req.body.email };
-
-    userModel.selectByEmail(data, (error, results) => {
-        if (error) {
-            console.error("selectByEmail error:", error);
-            return res.status(500).json(error);
-        }
-        if (results.length > 0) {
-            return res.status(409).json({
-                message: "Email already registered"
-            });
-        }
-        next();
-    });
-};
-
-
-// Check if username already exists
-module.exports.checkUsernameExists = (req, res, next) => {
-    const data = { username: req.body.username };
-
-    userModel.selectByUsername(data, (error, results) => {
+    userModel.selectByUsername(checkUsername, (error, results) => {
         if (error) {
             console.error("selectByUsername error:", error);
             return res.status(500).json(error);
         }
+
         if (results.length > 0) {
             return res.status(409).json({
-                message: "Username already taken"
+                message: "Username taken"
             });
         }
+
+        // Pass data to next middleware
+        res.locals.username = data.username;
         next();
     });
 };
 
-
-// Create new user (after password hash)
-module.exports.createUser = (req, res, next) => {
-
+module.exports.createNewUser = (req, res, next) => {
     const data = {
-        username: req.body.username,
-        email: req.body.email,
-        password: res.locals.hash
+        username: res.locals.username
     };
 
     userModel.insertSingle(data, (error, results) => {
-
         if (error) {
             console.error("insertSingle error:", error);
             return res.status(500).json(error);
-        }
-        else {
-            res.locals.userId = results.insertId;
-            res.locals.message = "Registration successful";
-            next();
-        }
-
-    });
-};
-
-
-// Check login body
-module.exports.checkLoginBody = (req, res, next) => {
-    if (!req.body.email || !req.body.password) {
-        return res.status(400).json({
-            message: "Missing email or password"
+        } 
+        
+        return res.status(201).json({
+            user_id: results.insertId,
+            username: data.username,
+            points: 0
         });
-    }
-    next();
-};
-
-
-// Get user by username or email for login
-module.exports.getUserByEmail = (req, res, next) => {
-    const data = {
-        username: req.body.email, // "email" field in body might contain username or email
-        email: req.body.email
-    };
-
-    userModel.selectByUsernameOrEmail(data, (error, results) => {
-        if (error) {
-            console.error("selectByUsernameOrEmail error:", error);
-            return res.status(500).json(error);
-        }
-        if (results.length === 0) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-
-        res.locals.userId = results[0].user_id;
-        res.locals.hash = results[0].password;
-        res.locals.message = "Login successful";
-        next();
     });
 };
 
 
-module.exports.updateUserById = (req, res) => {
+// ##############################################################
+// UPDATE USER MIDDLEWARE
+// ##############################################################
 
+module.exports.checkUserExists = (req, res, next) => {
     const data = {
         user_id: req.params.user_id,
         username: req.body.username,
@@ -172,9 +121,7 @@ module.exports.updateUserById = (req, res) => {
         user_id: data.user_id
     };
 
-    // check that the user exist
     userModel.selectByUserId(checkUserId, (error, userResults) => {
-
         if (error) {
             console.error("selectByUserId error:", error);
             return res.status(500).json(error);
@@ -186,41 +133,52 @@ module.exports.updateUserById = (req, res) => {
             });
         }
 
-        const checkUsername = {
-            username: data.username
-        };
+        res.locals.user_id = data.user_id;
+        res.locals.username = data.username;
+        res.locals.points = data.points;
+        next();
+    });
+};
 
-        // check if another user already has this username
-        userModel.selectByUsername(checkUsername, (error, usernameResults) => {
+module.exports.checkUsernameAvailability = (req, res, next) => {
+    const checkUsername = {
+        username: res.locals.username
+    };
 
-            if (error) {
-                console.error("selectByUsername error:", error);
-                return res.status(500).json(error);
-            }
+    userModel.selectByUsername(checkUsername, (error, usernameResults) => {
+        if (error) {
+            console.error("selectByUsername error:", error);
+            return res.status(500).json(error);
+        }
 
-            if (usernameResults.length > 0 && usernameResults[0].user_id != data.user_id) {
-                return res.status(409).json({
-                    message: "Username taken"
-                });
-            }
+        if (usernameResults.length > 0 && usernameResults[0].user_id != res.locals.user_id) {
+            return res.status(409).json({
+                message: "Username taken"
+            });
+        }
 
-            userModel.updateById(data, (error, result) => {
+        next();
+    });
+};
 
-                if (error) {
-                    console.error("updateById error:", error);
-                    return res.status(500).json(error);
-                }
+module.exports.performUpdateUser = (req, res, next) => {
+    const data = {
+        user_id: res.locals.user_id,
+        username: res.locals.username,
+        points: res.locals.points
+    };
 
-                return res.status(200).json({
-                    user_id: Number(data.user_id),
-                    username: data.username,
-                    points: data.points
-                })
+    userModel.updateById(data, (error, result) => {
+        if (error) {
+            console.error("updateById error:", error);
+            return res.status(500).json(error);
+        }
 
-            })
-
+        return res.status(200).json({
+            user_id: Number(data.user_id),
+            username: data.username,
+            points: data.points
         });
-
     });
 };
 

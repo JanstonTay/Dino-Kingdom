@@ -121,8 +121,12 @@ module.exports.readFeedByDinosaurId = (req, res) => {
 };
 
 
-module.exports.createFeedEvent = (req, res) => {
+// ##############################################################
+// CREATE FEED EVENT MIDDLEWARE
+// ##############################################################
 
+// 1. Validate Request Body
+module.exports.validateFeedRequest = (req, res, next) => {
     const data = {
         user_id: req.body.user_id,
         dinosaur_id: req.body.dinosaur_id,
@@ -142,19 +146,20 @@ module.exports.createFeedEvent = (req, res) => {
     }
 
     if (Number(data.quantity) <= 0) {
-
         return res.status(400).json({
             message: "Quantity must be greater than 0"
         });
-
     }
 
-    const dinoData = {
-        dinosaur_id: data.dinosaur_id
-    };
+    res.locals.feedData = data;
+    next();
+};
 
-    const dinoCallback = (error, dinoResults) => {
+// 2. Check Dinosaur Ownership
+module.exports.checkDinosaurOwnership = (req, res, next) => {
+    const { dinosaur_id, user_id } = res.locals.feedData;
 
+    dinosaurFeedModel.selectDinosaurWithDiet({ dinosaur_id }, (error, dinoResults) => {
         if (error) {
             console.error("Error selectDinosaurWithDiet:", error);
             return res.status(500).json(error);
@@ -168,149 +173,160 @@ module.exports.createFeedEvent = (req, res) => {
 
         const dinosaur = dinoResults[0];
 
-        if (Number(dinosaur.owner_id) !== Number(data.user_id)) {
+        if (Number(dinosaur.owner_id) !== Number(user_id)) {
             return res.status(403).json({
                 message: "Forbidden: dinosaur does not belong to this user"
             });
         }
 
-        const foodData = {
-            food_type_id: data.food_type_id
-        };
+        res.locals.dinosaur = dinosaur;
+        next();
+    });
+};
 
-        const foodCallback = (error2, foodResults) => {
+// 3. Check Food and Diet Compatibility
+module.exports.checkFoodAndDiet = (req, res, next) => {
+    const { food_type_id } = res.locals.feedData;
+    const { dinosaur } = res.locals;
 
-            if (error2) {
-                console.error("Error selectFoodTypeById:", error2);
-                return res.status(500).json(error2);
-            }
+    dinosaurFeedModel.selectFoodTypeById({ food_type_id }, (error, foodResults) => {
+        if (error) {
+            console.error("Error selectFoodTypeById:", error);
+            return res.status(500).json(error);
+        }
 
-            if (foodResults.length === 0) {
-                return res.status(404).json({
-                    message: "Food type not found"
-                });
-            }
+        if (foodResults.length === 0) {
+            return res.status(404).json({
+                message: "Food type not found"
+            });
+        }
 
-            const food = foodResults[0];
+        const food = foodResults[0];
 
-            if (!dietsCompatible(dinosaur.dinosaur_diet, food.diet)) {
-                return res.status(403).json({
-                    message: "Food diet not compatible with dinosaur diet"
-                });
-            }
+        if (!dietsCompatible(dinosaur.dinosaur_diet, food.diet)) {
+            return res.status(403).json({
+                message: "Food diet not compatible with dinosaur diet"
+            });
+        }
 
-            const inventoryData = {
-                user_id: data.user_id,
-                food_type_id: data.food_type_id
-            };
+        res.locals.food = food;
+        next();
+    });
+};
 
-            const inventoryCallback = (error3, invResults) => {
+// 4. Check Inventory
+module.exports.checkInventory = (req, res, next) => {
+    const { user_id, food_type_id, quantity } = res.locals.feedData;
 
-                if (error3) {
-                    console.error("Error selectInventoryRow:", error3);
-                    return res.status(500).json(error3);
-                }
+    const inventoryData = { user_id, food_type_id };
 
-                if (invResults.length === 0) {
-                    return res.status(400).json({
-                        message: "No such food in inventory"
-                    });
-                }
+    dinosaurFeedModel.selectInventoryRow(inventoryData, (error, invResults) => {
+        if (error) {
+            console.error("Error selectInventoryRow:", error);
+            return res.status(500).json(error);
+        }
 
-                const inventory = invResults[0];
+        if (invResults.length === 0) {
+            return res.status(400).json({
+                message: "No such food in inventory"
+            });
+        }
 
-                if (inventory.quantity < data.quantity) {
-                    return res.status(400).json({
-                        message: "Not enough food in inventory"
-                    });
-                }
+        const inventory = invResults[0];
 
-                //  Calculate XP gain + new stats
-                const gainedXp = Number(food.xp_gain) * Number(data.quantity);
-                const updatedStats = applyXpAndLevel(dinosaur, gainedXp);
+        if (inventory.quantity < quantity) {
+            return res.status(400).json({
+                message: "Not enough food in inventory"
+            });
+        }
 
-                //  Insert feed event
-                const feedData = {
-                    dinosaur_id: data.dinosaur_id,
-                    food_type_id: data.food_type_id,
-                    quantity: data.quantity
-                };
+        next();
+    });
+};
 
-                const insertCallback = (error4, feedResults) => {
-
-                    if (error4) {
-                        console.error("Error insertFeedEvent:", error4);
-                        return res.status(500).json(error4);
-                    }
-
-                    const feed_id = feedResults.insertId;
-
-                    //  Decrement inventory
-                    const decData = {
-                        user_id: data.user_id,
-                        food_type_id: data.food_type_id,
-                        quantity: data.quantity
-                    };
-
-                    const decCallback = (error5, decResults) => {
-
-                        if (error5) {
-                            console.error("Error decrementInventory:", error5);
-                            return res.status(500).json(error5);
-                        }
-
-                        if (decResults.affectedRows === 0) {
-                            return res.status(409).json({
-                                message: "Failed to update inventory"
-                            });
-                        }
-
-                        // Update dinosaur stats (level, xp, height, weight)
-                        const statsData = {
-                            dinosaur_id: data.dinosaur_id,
-                            level: updatedStats.level,
-                            xp: updatedStats.xp,
-                            height: updatedStats.height,
-                            weight: updatedStats.weight
-                        };
-
-                        const statsCallback = (error6, statsResults) => {
-
-                            if (error6) {
-                                console.error("Error updateDinosaurStats:", error6);
-                                return res.status(500).json(error6);
-                            }
-
-                            return res.status(201).json({
-                                feed_id: feed_id,
-                                dinosaur_id: Number(data.dinosaur_id),
-                                food_type_id: Number(data.food_type_id),
-                                quantity: Number(data.quantity),
-                                xp_gained: gainedXp,
-                                new_level: updatedStats.level,
-                                new_xp: updatedStats.xp,
-                                new_height: updatedStats.height,
-                                new_weight: updatedStats.weight,
-                                message: "Dinosaur fed, inventory updated, stats updated"
-                            });
-                        };
-
-                        dinosaurFeedModel.updateDinosaurStats(statsData, statsCallback);
-                    };
-
-                    dinosaurFeedModel.decrementInventory(decData, decCallback);
-                };
-
-                dinosaurFeedModel.insertFeedEvent(feedData, insertCallback);
-            };
-
-            dinosaurFeedModel.selectInventoryRow(inventoryData, inventoryCallback);
-        };
-
-        dinosaurFeedModel.selectFoodTypeById(foodData, foodCallback);
+// 5. Insert Feed Feed Log
+module.exports.insertFeedLog = (req, res, next) => {
+    const { dinosaur_id, food_type_id, quantity } = res.locals.feedData;
+    const feedData = {
+        dinosaur_id,
+        food_type_id,
+        quantity
     };
 
-    dinosaurFeedModel.selectDinosaurWithDiet(dinoData, dinoCallback);
+    dinosaurFeedModel.insertFeedEvent(feedData, (error, feedResults) => {
+        if (error) {
+            console.error("Error insertFeedEvent:", error);
+            return res.status(500).json(error);
+        }
+
+        res.locals.feed_id = feedResults.insertId;
+        next();
+    });
+};
+
+// 6. Decrement Inventory
+module.exports.decrementUserInventory = (req, res, next) => {
+    const { user_id, food_type_id, quantity } = res.locals.feedData;
+    const decData = {
+        user_id,
+        food_type_id,
+        quantity
+    };
+
+    dinosaurFeedModel.decrementInventory(decData, (error, decResults) => {
+        if (error) {
+            console.error("Error decrementInventory:", error);
+            return res.status(500).json(error);
+        }
+
+        if (decResults.affectedRows === 0) {
+            // Ideally we should rollback the feed log here, but for this exercise we move forward
+            // Realistically, transactional integrity is needed.
+            return res.status(409).json({
+                message: "Failed to update inventory"
+            });
+        }
+
+        next();
+    });
+};
+
+// 7. Update Stats and Respond
+module.exports.updateStatsAndRespond = (req, res) => {
+    const { dinosaur, food, feedData, feed_id } = res.locals;
+    const { quantity } = feedData;
+
+    const gainedXp = Number(food.xp_gain) * Number(quantity);
+    const updatedStats = applyXpAndLevel(dinosaur, gainedXp);
+
+    const statsData = {
+        dinosaur_id: dinosaur.dinosaur_id, // Note: sql query alias was dinosaur_id
+        level: updatedStats.level,
+        xp: updatedStats.xp,
+        height: updatedStats.height,
+        weight: updatedStats.weight
+    };
+
+    dinosaurFeedModel.updateDinosaurStats(statsData, (error, statsResults) => {
+        if (error) {
+            console.error("Error updateDinosaurStats:", error);
+            return res.status(500).json(error);
+        }
+
+        return res.status(201).json({
+            feed_id: feed_id,
+            dinosaur_id: Number(dinosaur.dinosaur_id),
+            food_type_id: Number(food.food_type_id),
+            quantity: Number(quantity),
+            xp_gained: gainedXp,
+            new_level: updatedStats.level,
+            new_xp: updatedStats.xp,
+            new_height: updatedStats.height,
+            new_weight: updatedStats.weight,
+            message: "Dinosaur fed, inventory updated, stats updated"
+        });
+    });
 };
 
 console.log("dinosaurFeed controller loaded");
+

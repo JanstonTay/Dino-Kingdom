@@ -14,21 +14,17 @@ module.exports.checkChallengeBody = (req, res, next) => {
 };
 
 
-module.exports.createChallenge = (req, res, next) => {
+// ##############################################################
+// CREATE CHALLENGE MIDDLEWARE
+// ##############################################################
 
-    const data = {
-        user_id: req.body.user_id,
-        description: req.body.description,
-        points: req.body.points
-    };
-
-    // check if creator exists
+// Middleware 1: Check Creator Exists
+module.exports.checkCreatorExists = (req, res, next) => {
     const userData = {
-        user_id: data.user_id
+        user_id: req.body.user_id
     };
 
-    const checkUserCallback = (error, results) => {
-
+    userModel.selectByUserId(userData, (error, results) => {
         if (error) {
             console.error("selectByUserId error:", error);
             return res.status(500).json(error);
@@ -40,21 +36,27 @@ module.exports.createChallenge = (req, res, next) => {
             });
         }
 
-        const insertCallback = (error, results) => {
+        next();
+    });
+};
 
-            if (error) {
-                console.error("insertChallenge error:", error);
-                return res.status(500).json(error);
-            }
-
-            res.locals.challenge_id = results.insertId;
-            next();
-        };
-
-        wellnessChallengeModel.insertChallenge(data, insertCallback);
+// Middleware 2: Insert Challenge
+module.exports.insertChallenge = (req, res, next) => {
+    const data = {
+        user_id: req.body.user_id,
+        description: req.body.description,
+        points: req.body.points
     };
 
-    userModel.selectByUserId(userData, checkUserCallback);
+    wellnessChallengeModel.insertChallenge(data, (error, results) => {
+        if (error) {
+            console.error("insertChallenge error:", error);
+            return res.status(500).json(error);
+        }
+
+        res.locals.challenge_id = results.insertId;
+        next();
+    });
 };
 
 

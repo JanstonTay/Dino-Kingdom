@@ -7,10 +7,10 @@ router.get("/", controller.readAllDinosaurs);
 router.post("/", controller.createDinosaur);
 
 router.get("/:id", controller.readDinosaurById);
-router.put("/:id", controller.updateDinosaurById);
+router.put("/:id", [controller.checkUpdateRequestAndFetchDino, controller.performDinosaurUpdate]);
 router.delete("/:id", controller.deleteDinosaurById);
 
-router.get("/:id/dex", controller.readDinosaurByIdWithDexInfo);
+router.get("/:id/dex", [controller.fetchDinosaurForDex, controller.fetchDexInfoAndRespond]);
 
 module.exports = router;
 

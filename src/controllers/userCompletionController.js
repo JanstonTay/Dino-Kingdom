@@ -13,14 +13,15 @@ module.exports.checkCompletionBody = (req, res, next) => {
 };
 
 
-module.exports.checkUserAndChallenge = (req, res, next) => {
+// ##############################################################
+// CHECK USER AND CHALLENGE MIDDLEWARE
+// ##############################################################
 
-    const userData = {
-        user_id: req.body.user_id
-    };
+// Middleware 1: Check User Exists
+module.exports.checkUserExists = (req, res, next) => {
+    const userData = { user_id: req.body.user_id };
 
-    const userCallback = (error, results) => {
-
+    userCompletionModel.selectUserById(userData, (error, results) => {
         if (error) {
             console.error("selectUserById error:", error);
             return res.status(500).json(error);
@@ -32,75 +33,75 @@ module.exports.checkUserAndChallenge = (req, res, next) => {
             });
         }
 
-        const challengeData = {
-            challenge_id: req.params.challenge_id
-        };
+        next();
+    });
+};
 
-        const challengeCallback = (error, results) => {
+// Middleware 2: Check Challenge Exists
+module.exports.checkChallengeExists = (req, res, next) => {
+    const challengeData = { challenge_id: req.params.challenge_id };
 
-            if (error) {
-                console.error("selectChallengeById error:", error);
-                return res.status(500).json(error);
-            }
+    userCompletionModel.selectChallengeById(challengeData, (error, results) => {
+        if (error) {
+            console.error("selectChallengeById error:", error);
+            return res.status(500).json(error);
+        }
 
-            if (results.length == 0) {
-                return res.status(404).json({
-                    message: "Challenge not found"
-                });
-            }
+        if (results.length == 0) {
+            return res.status(404).json({
+                message: "Challenge not found"
+            });
+        }
 
-            res.locals.points_to_add = results[0].points;
-            next();
-        };
-
-        userCompletionModel.selectChallengeById(challengeData, challengeCallback);
-    };
-
-    userCompletionModel.selectUserById(userData, userCallback);
+        res.locals.points_to_add = results[0].points;
+        next();
+    });
 };
 
 
-module.exports.completeChallengeAndAddPoints = (req, res) => {
+// ##############################################################
+// COMPLETE CHALLENGE MIDDLEWARE
+// ##############################################################
 
+// Middleware 1: Insert Completion Record
+module.exports.insertCompletionRecord = (req, res, next) => {
     const data = {
         challenge_id: req.params.challenge_id,
         user_id: req.body.user_id,
         details: req.body.details
     };
 
-    const insertCallback = (error, results) => {
-
+    userCompletionModel.insertCompletion(data, (error, results) => {
         if (error) {
             console.error("insertCompletion error:", error);
             return res.status(500).json(error);
         }
 
-        const complete_id = results.insertId;
+        res.locals.complete_id = results.insertId;
+        next();
+    });
+};
 
-        const rewardData = {
-            user_id: data.user_id,
-            points_to_add: res.locals.points_to_add
-        };
-
-        const rewardCallback = (error) => {
-
-            if (error) {
-                console.error("addPointsToUser error:", error);
-                return res.status(500).json(error);
-            }
-
-            return res.status(201).json({
-                complete_id: complete_id,
-                challenge_id: Number(data.challenge_id),
-                user_id: data.user_id,
-                details: data.details
-            });
-        };
-
-        userCompletionModel.addPointsToUser(rewardData, rewardCallback);
+// Middleware 2: Add Points to User
+module.exports.addPointsToUser = (req, res) => {
+    const rewardData = {
+        user_id: req.body.user_id,
+        points_to_add: res.locals.points_to_add
     };
 
-    userCompletionModel.insertCompletion(data, insertCallback);
+    userCompletionModel.addPointsToUser(rewardData, (error) => {
+        if (error) {
+            console.error("addPointsToUser error:", error);
+            return res.status(500).json(error);
+        }
+
+        return res.status(201).json({
+            complete_id: res.locals.complete_id,
+            challenge_id: Number(req.params.challenge_id),
+            user_id: req.body.user_id,
+            details: req.body.details
+        });
+    });
 };
 
 

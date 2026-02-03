@@ -43,19 +43,10 @@ module.exports.readUserPurchasesByUserId = (req, res) => {
 
 
 // ##############################################################
-// POST /userPurchases
-// body: { user_id, item_type: "egg"|"food", item_id, quantity }
-//
-// Steps:
-//  1) Validate body & item_type
-//  2) Get price_points from EggType / FoodType
-//  3) Check user's current points
-//  4) Deduct points if enough
-//  5) Add to UserEggInventory / UserFoodInventory
-//  6) Insert purchase log
+// CREATE USER PURCHASE MIDDLEWARE
 // ##############################################################
-module.exports.createUserPurchase = (req, res) => {
 
+module.exports.validatePurchaseRequest = (req, res, next) => {
     const data = {
         user_id: req.body.user_id,
         item_type: req.body.item_type,   // "egg" or "food"
@@ -86,259 +77,199 @@ module.exports.createUserPurchase = (req, res) => {
         });
     }
 
-    // 2) Get price_points based on item_type
-    const quantity = Number(data.quantity);
+    // Store in res.locals for subsequent middlewares
+    res.locals.purchaseData = data;
+    next();
+};
 
-    const handlePrice = (pricePerUnit) => {
+module.exports.fetchItemPrice = (req, res, next) => {
+    const { item_type, item_id } = res.locals.purchaseData;
 
-        const totalCost = pricePerUnit * quantity;
+    const priceCallback = (err, results) => {
+        if (err) {
+            console.error("Error fetching price:", err);
+            return res.status(500).json(err);
+        }
 
-        // 3) Check user's current points
-        const userSQL = `
-            SELECT user_id, username, points
-            FROM User
-            WHERE user_id = ?;
-        `;
-
-        pool.query(userSQL, [data.user_id], (userErr, userResults) => {
-
-            if (userErr) {
-                console.error("Error reading User (createUserPurchase):", userErr);
-                return res.status(500).json(userErr);
-            }
-
-            if (userResults.length === 0) {
-                return res.status(404).json({
-                    message: "User not found"
-                });
-            }
-
-            const userRow = userResults[0];
-
-            if (userRow.points < totalCost) {
-                return res.status(400).json({
-                    message: "Not enough points to complete purchase",
-                    current_points: userRow.points,
-                    total_cost: totalCost
-                });
-            }
-
-            const newPoints = userRow.points - totalCost;
-
-            // 4) Deduct points
-            const updateUserSQL = `
-                UPDATE User
-                SET points = ?
-                WHERE user_id = ?;
-            `;
-
-            pool.query(updateUserSQL, [newPoints, data.user_id], (updErr) => {
-
-                if (updErr) {
-                    console.error("Error updating User points (createUserPurchase):", updErr);
-                    return res.status(500).json(updErr);
-                }
-
-                // 5) Add to inventory
-                if (data.item_type === "egg") {
-
-                    const invKey = {
-                        user_id: data.user_id,
-                        egg_type_id: data.item_id
-                    };
-
-                    const invCheckCallback = (invErr, invResults) => {
-
-                        if (invErr) {
-                            console.error("Error selectSingle (egg inventory):", invErr);
-                            return res.status(500).json(invErr);
-                        }
-
-                        if (invResults.length > 0) {
-                            const currentQty = Number(invResults[0].quantity);
-                            const newQty = currentQty + quantity;
-
-                            const updateData = {
-                                user_id: data.user_id,
-                                egg_type_id: data.item_id,
-                                quantity: newQty
-                            };
-
-                            userEggInventoryModel.updateQuantity(updateData, (uErr) => {
-
-                                if (uErr) {
-                                    console.error("Error updateQuantity (egg inventory):", uErr);
-                                    return res.status(500).json(uErr);
-                                }
-
-                                // move on to logging purchase
-                                insertPurchase(totalCost, newPoints);
-                            });
-
-                        } else {
-
-                            const insertData = {
-                                user_id: data.user_id,
-                                egg_type_id: data.item_id,
-                                quantity: quantity
-                            };
-
-                            userEggInventoryModel.insertSingle(insertData, (iErr) => {
-
-                                if (iErr) {
-                                    console.error("Error insertSingle (egg inventory):", iErr);
-                                    return res.status(500).json(iErr);
-                                }
-
-                                insertPurchase(totalCost, newPoints);
-                            });
-                        }
-                    };
-
-                    userEggInventoryModel.selectSingle(invKey, invCheckCallback);
-
-                } else if (data.item_type === "food") {
-
-                    const invKey = {
-                        user_id: data.user_id,
-                        food_type_id: data.item_id
-                    };
-
-                    const invCheckCallback = (invErr, invResults) => {
-
-                        if (invErr) {
-                            console.error("Error selectSingle (food inventory):", invErr);
-                            return res.status(500).json(invErr);
-                        }
-
-                        if (invResults.length > 0) {
-                            const currentQty = Number(invResults[0].quantity);
-                            const newQty = currentQty + quantity;
-
-                            const updateData = {
-                                user_id: data.user_id,
-                                food_type_id: data.item_id,
-                                quantity: newQty
-                            };
-
-                            userFoodInventoryModel.updateQuantity(updateData, (uErr) => {
-
-                                if (uErr) {
-                                    console.error("Error updateQuantity (food inventory):", uErr);
-                                    return res.status(500).json(uErr);
-                                }
-
-                                insertPurchase(totalCost, newPoints);
-                            });
-
-                        } else {
-
-                            const insertData = {
-                                user_id: data.user_id,
-                                food_type_id: data.item_id,
-                                quantity: quantity
-                            };
-
-                            userFoodInventoryModel.insertSingle(insertData, (iErr) => {
-
-                                if (iErr) {
-                                    console.error("Error insertSingle (food inventory):", iErr);
-                                    return res.status(500).json(iErr);
-                                }
-
-                                insertPurchase(totalCost, newPoints);
-                            });
-                        }
-                    };
-
-                    userFoodInventoryModel.selectSingle(invKey, invCheckCallback);
-                }
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: `${item_type} type not found`
             });
+        }
+
+        res.locals.pricePerUnit = Number(results[0].price_points);
+        next();
+    };
+
+    if (item_type === "egg") {
+        eggTypeModel.selectById({ egg_type_id: item_id }, priceCallback);
+    } else { // food
+        foodTypeModel.selectById({ food_type_id: item_id }, priceCallback);
+    }
+};
+
+module.exports.checkUserBalance = (req, res, next) => {
+    const { user_id, quantity } = res.locals.purchaseData;
+    const pricePerUnit = res.locals.pricePerUnit;
+    const totalCost = pricePerUnit * Number(quantity);
+
+    res.locals.totalCost = totalCost;
+
+    const userSQL = `
+        SELECT user_id, username, points
+        FROM User
+        WHERE user_id = ?;
+    `;
+
+    pool.query(userSQL, [user_id], (userErr, userResults) => {
+        if (userErr) {
+            console.error("Error reading User (checkUserBalance):", userErr);
+            return res.status(500).json(userErr);
+        }
+
+        if (userResults.length === 0) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const userRow = userResults[0];
+
+        if (userRow.points < totalCost) {
+            return res.status(400).json({
+                message: "Not enough points to complete purchase",
+                current_points: userRow.points,
+                total_cost: totalCost
+            });
+        }
+
+        res.locals.currentPoints = userRow.points;
+        res.locals.newPoints = userRow.points - totalCost;
+        next();
+    });
+};
+
+module.exports.deductUserPoints = (req, res, next) => {
+    const { user_id } = res.locals.purchaseData;
+    const newPoints = res.locals.newPoints;
+
+    const updateUserSQL = `
+        UPDATE User
+        SET points = ?
+        WHERE user_id = ?;
+    `;
+
+    pool.query(updateUserSQL, [newPoints, user_id], (updErr) => {
+        if (updErr) {
+            console.error("Error updating User points (deductUserPoints):", updErr);
+            return res.status(500).json(updErr);
+        }
+        next();
+    });
+};
+
+module.exports.updateUserInventory = (req, res, next) => {
+    const { user_id, item_type, item_id, quantity } = res.locals.purchaseData;
+    const qty = Number(quantity);
+
+    if (item_type === "egg") {
+        const invKey = { user_id: user_id, egg_type_id: item_id };
+        
+        userEggInventoryModel.selectSingle(invKey, (invErr, invResults) => {
+            if (invErr) {
+                console.error("Error selectSingle (egg inventory):", invErr);
+                return res.status(500).json(invErr);
+            }
+
+            if (invResults.length > 0) {
+                const newQty = Number(invResults[0].quantity) + qty;
+                const updateData = { user_id, egg_type_id: item_id, quantity: newQty };
+                
+                userEggInventoryModel.updateQuantity(updateData, (uErr) => {
+                    if (uErr) {
+                        console.error("Error updateQuantity (egg inventory):", uErr);
+                        return res.status(500).json(uErr);
+                    }
+                    next();
+                });
+            } else {
+                const insertData = { user_id, egg_type_id: item_id, quantity: qty };
+                
+                userEggInventoryModel.insertSingle(insertData, (iErr) => {
+                    if (iErr) {
+                        console.error("Error insertSingle (egg inventory):", iErr);
+                        return res.status(500).json(iErr);
+                    }
+                    next();
+                });
+            }
         });
-    };
-
-    // helper to actually insert into UserPurchase and respond
-    const insertPurchase = (totalCost, newPoints) => {
-
-        const purchased_on = new Date();
-
-        const purchaseData = {
-            user_id: data.user_id,
-            item_type: data.item_type,
-            item_id: data.item_id,
-            quantity: quantity,
-            purchased_on: purchased_on
-        };
-
-        const purchaseCallback = (pErr, pResults) => {
-
-            if (pErr) {
-                console.error("Error insertSingle (UserPurchase):", pErr);
-                return res.status(500).json(pErr);
-            }
-
-            return res.status(201).json({
-                purchase_id: pResults.insertId,
-                user_id: data.user_id,
-                item_type: data.item_type,
-                item_id: data.item_id,
-                quantity: quantity,
-                purchased_on: purchased_on,
-                total_cost: totalCost,
-                remaining_points: newPoints
-            });
-        };
-
-        userPurchaseModel.insertSingle(purchaseData, purchaseCallback);
-    };
-
-    // Decide which price lookup to use
-    if (data.item_type === "egg") {
-
-        const eggData = { egg_type_id: data.item_id };
-
-        const eggCallback = (err, results) => {
-
-            if (err) {
-                console.error("Error selectById (EggType):", err);
-                return res.status(500).json(err);
-            }
-
-            if (results.length === 0) {
-                return res.status(404).json({
-                    message: "Egg type not found"
-                });
-            }
-
-            const price = Number(results[0].price_points);
-            handlePrice(price);
-        };
-
-        eggTypeModel.selectById(eggData, eggCallback);
 
     } else { // food
+        const invKey = { user_id: user_id, food_type_id: item_id };
 
-        const foodData = { food_type_id: data.item_id };
-
-        const foodCallback = (err, results) => {
-
-            if (err) {
-                console.error("Error selectById (FoodType):", err);
-                return res.status(500).json(err);
+        userFoodInventoryModel.selectSingle(invKey, (invErr, invResults) => {
+            if (invErr) {
+                console.error("Error selectSingle (food inventory):", invErr);
+                return res.status(500).json(invErr);
             }
 
-            if (results.length === 0) {
-                return res.status(404).json({
-                    message: "Food type not found"
+            if (invResults.length > 0) {
+                const newQty = Number(invResults[0].quantity) + qty;
+                const updateData = { user_id, food_type_id: item_id, quantity: newQty };
+
+                userFoodInventoryModel.updateQuantity(updateData, (uErr) => {
+                    if (uErr) {
+                        console.error("Error updateQuantity (food inventory):", uErr);
+                        return res.status(500).json(uErr);
+                    }
+                    next();
+                });
+            } else {
+                const insertData = { user_id, food_type_id: item_id, quantity: qty };
+
+                userFoodInventoryModel.insertSingle(insertData, (iErr) => {
+                    if (iErr) {
+                        console.error("Error insertSingle (food inventory):", iErr);
+                        return res.status(500).json(iErr);
+                    }
+                    next();
                 });
             }
-
-            const price = Number(results[0].price_points);
-            handlePrice(price);
-        };
-
-        foodTypeModel.selectById(foodData, foodCallback);
+        });
     }
+};
+
+module.exports.logPurchaseTransaction = (req, res, next) => {
+    const { user_id, item_type, item_id, quantity } = res.locals.purchaseData;
+    const { totalCost, newPoints } = res.locals;
+    const purchased_on = new Date();
+
+    const purchaseData = {
+        user_id,
+        item_type,
+        item_id,
+        quantity,
+        purchased_on
+    };
+
+    userPurchaseModel.insertSingle(purchaseData, (pErr, pResults) => {
+        if (pErr) {
+            console.error("Error insertSingle (UserPurchase):", pErr);
+            return res.status(500).json(pErr);
+        }
+
+        return res.status(201).json({
+            purchase_id: pResults.insertId,
+            user_id: user_id,
+            item_type: item_type,
+            item_id: item_id,
+            quantity: quantity,
+            purchased_on: purchased_on,
+            total_cost: totalCost,
+            remaining_points: newPoints
+        });
+    });
 };
 
 console.log("userPurchase controller loaded");

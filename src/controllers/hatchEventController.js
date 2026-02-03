@@ -24,8 +24,8 @@ module.exports.readAllHatchEvents = (req, res) => {
 
 module.exports.readHatchEventsByUserId = (req, res) => {
 
-    const data = {
-        user_id: req.params.user_id
+    const data = { 
+        user_id: req.params.user_id 
     };
 
     const callback = (error, results) => {
@@ -44,22 +44,11 @@ module.exports.readHatchEventsByUserId = (req, res) => {
 
 
 // ##############################################################
-// POST /hatchEvents
-// body: { "user_id": 1, "egg_type_id": 1 }
-//
-// Logic:
-//  1) Check user has this egg in UserEggInventory (quantity > 0)
-//  2) Look up egg rarity from EggType
-//  3) Find all DinosaurDex with that rarity
-//  4) Randomly choose one dex entry
-//  5) Generate random height (0–2.5) and weight (0–250)
-//  6) Create Dinosaur (level 1, xp 0)
-//  7) Decrease egg quantity by 1
-//  8) Insert HatchEvent log
+// CREATE HATCH EVENT MIDDLEWARE
 // ##############################################################
 
-module.exports.createHatchEvent = (req, res) => {
-
+// 1. Validate Request
+module.exports.validateHatchRequest = (req, res, next) => {
     const data = {
         user_id: req.body.user_id,
         egg_type_id: req.body.egg_type_id
@@ -71,14 +60,16 @@ module.exports.createHatchEvent = (req, res) => {
         });
     }
 
-    // 1) Check egg inventory
-    const invData = {
-        user_id: data.user_id,
-        egg_type_id: data.egg_type_id
-    };
+    res.locals.hatchData = data;
+    next();
+};
 
-    const invCallback = (error, invResults) => {
+// 2. Check Egg Inventory
+module.exports.checkEggInventory = (req, res, next) => {
+    const { user_id, egg_type_id } = res.locals.hatchData;
+    const invData = { user_id, egg_type_id };
 
+    userEggInventoryModel.selectSingle(invData, (error, invResults) => {
         if (error) {
             console.error("Error selectSingle (createHatchEvent - inventory):", error);
             return res.status(500).json(error);
@@ -90,136 +81,142 @@ module.exports.createHatchEvent = (req, res) => {
             });
         }
 
-        const currentQty = Number(invResults[0].quantity);
-
-        // 2) Look up egg rarity
-        const eggData = { egg_type_id: data.egg_type_id };
-
-        const eggCallback = (error2, eggResults) => {
-
-            if (error2) {
-                console.error("Error selectById (createHatchEvent - eggType):", error2);
-                return res.status(500).json(error2);
-            }
-
-            if (eggResults.length === 0) {
-                return res.status(400).json({
-                    message: "Egg type not found"
-                });
-            }
-
-            const eggRarity = eggResults[0].rarity;
-
-            // 3) Find all dinos with this rarity
-            const dexData = { rarity: eggRarity };
-
-            const dexCallback = (error3, dexResults) => {
-
-                if (error3) {
-                    console.error("Error selectByRarity (createHatchEvent - dinosaurDex):", error3);
-                    return res.status(500).json(error3);
-                }
-
-                if (dexResults.length === 0) {
-                    return res.status(400).json({
-                        message: "No dinosaurs available for this egg rarity"
-                    });
-                }
-
-                // 4) Randomly choose one dex entry
-                const randomIndex = Math.floor(Math.random() * dexResults.length);
-                const chosenDex = dexResults[randomIndex];
-
-                const chosenDexNum = chosenDex.number;
-
-                // 5) Generate random height & weight (unless you want to allow override)
-                const randomHeight = Number((Math.random() * 2.5).toFixed(2));   // 0–2.50
-                const randomWeight = Number((Math.random() * 250).toFixed(2));   // 0–250.00
-
-                // 6) Create dinosaur
-                const dinoData = {
-                    owner_id: data.user_id,
-                    dex_num: chosenDexNum,
-                    level: 1,
-                    xp: 0,
-                    height: randomHeight,
-                    weight: randomWeight
-                };
-
-                const dinoCallback = (error4, dinoResults) => {
-
-                    if (error4) {
-                        console.error("Error insertSingle (createHatchEvent - dinosaur):", error4);
-                        return res.status(500).json(error4);
-                    }
-
-                    const dinosaur_id = dinoResults.insertId;
-                    const newQty = currentQty - 1;
-
-                    // 7) Decrease egg quantity by 1
-                    const updatedInvData = {
-                        user_id: data.user_id,
-                        egg_type_id: data.egg_type_id,
-                        quantity: newQty
-                    };
-
-                    const updateInvCallback = (error5) => {
-
-                        if (error5) {
-                            console.error("Error updateQuantity (createHatchEvent - inventory):", error5);
-                            return res.status(500).json(error5);
-                        }
-
-                        // 8) Insert hatch event log
-                        const hatched_on = new Date();
-
-                        const hatchData = {
-                            user_id: data.user_id,
-                            egg_type_id: data.egg_type_id,
-                            dinosaur_id: dinosaur_id,
-                            hatched_on: hatched_on
-                        };
-
-                        const hatchCallback = (error6, hatchResults) => {
-
-                            if (error6) {
-                                console.error("Error insertSingle (createHatchEvent - hatch):", error6);
-                                return res.status(500).json(error6);
-                            }
-
-                            return res.status(201).json({
-                                hatch_id: hatchResults.insertId,
-                                user_id: data.user_id,
-                                egg_type_id: data.egg_type_id,
-                                dinosaur_id: dinosaur_id,
-                                hatched_on: hatched_on,
-                                dex_num: chosenDexNum,
-                                name: chosenDex.name,
-                                rarity: eggRarity,
-                                diet: chosenDex.diet,
-                                height: randomHeight,
-                                weight: randomWeight
-                            });
-                        };
-
-                        hatchEventModel.insertSingle(hatchData, hatchCallback);
-                    };
-
-                    userEggInventoryModel.updateQuantity(updatedInvData, updateInvCallback);
-                };
-
-                dinosaurModel.insertSingle(dinoData, dinoCallback);
-            };
-
-            dinosaurDexModel.selectByRarity(dexData, dexCallback);
-        };
-
-        eggTypeModel.selectById(eggData, eggCallback);
-    };
-
-    userEggInventoryModel.selectSingle(invData, invCallback);
+        res.locals.currentEggQty = Number(invResults[0].quantity);
+        next();
+    });
 };
 
+// 3. Look up Egg Rarity
+module.exports.lookUpEggRarity = (req, res, next) => {
+    const { egg_type_id } = res.locals.hatchData;
+    const eggData = { egg_type_id };
+
+    eggTypeModel.selectById(eggData, (error, eggResults) => {
+        if (error) {
+            console.error("Error selectById (createHatchEvent - eggType):", error);
+            return res.status(500).json(error);
+        }
+
+        if (eggResults.length === 0) {
+            return res.status(400).json({
+                message: "Egg type not found"
+            });
+        }
+
+        res.locals.eggRarity = eggResults[0].rarity;
+        next();
+    });
+};
+
+// 4. Choose Dinosaur from Dex
+module.exports.chooseDinosaurFromDex = (req, res, next) => {
+    const { eggRarity } = res.locals;
+    const dexData = { rarity: eggRarity };
+
+    dinosaurDexModel.selectByRarity(dexData, (error, dexResults) => {
+        if (error) {
+            console.error("Error selectByRarity (createHatchEvent - dinosaurDex):", error);
+            return res.status(500).json(error);
+        }
+
+        if (dexResults.length === 0) {
+            return res.status(400).json({
+                message: "No dinosaurs available for this egg rarity"
+            });
+        }
+
+        const randomIndex = Math.floor(Math.random() * dexResults.length);
+        const chosenDex = dexResults[randomIndex];
+        const chosenDexNum = chosenDex.number;
+        
+        // Generate random stats
+        const randomHeight = Number((Math.random() * 2.5).toFixed(2));
+        const randomWeight = Number((Math.random() * 250).toFixed(2));
+
+        res.locals.chosenDexNum = chosenDexNum;
+        res.locals.randomHeight = randomHeight;
+        res.locals.randomWeight = randomWeight;
+        next();
+    });
+};
+
+// 5. Hatch Dinosaur (Create Dino Instance)
+module.exports.hatchDinosaur = (req, res, next) => {
+    const { user_id } = res.locals.hatchData;
+    const { chosenDexNum, randomHeight, randomWeight } = res.locals;
+
+    const dinoData = {
+        owner_id: user_id,
+        dex_num: chosenDexNum,
+        level: 1,
+        xp: 0,
+        height: randomHeight,
+        weight: randomWeight
+    };
+
+    dinosaurModel.insertSingle(dinoData, (error, dinoResults) => {
+        if (error) {
+            console.error("Error insertSingle (createHatchEvent - dinosaur):", error);
+            return res.status(500).json(error);
+        }
+
+        res.locals.newDinosaurId = dinoResults.insertId;
+        next();
+    });
+};
+
+// 6. Decrement Egg Inventory
+module.exports.decrementEggInventory = (req, res, next) => {
+    const { user_id, egg_type_id } = res.locals.hatchData;
+    const { currentEggQty } = res.locals;
+
+    const newQty = currentEggQty - 1;
+    const updatedInvData = {
+        user_id,
+        egg_type_id,
+        quantity: newQty
+    };
+
+    userEggInventoryModel.updateQuantity(updatedInvData, (error) => {
+        if (error) {
+            console.error("Error updateQuantity (createHatchEvent - inventory):", error);
+            return res.status(500).json(error);
+        }
+        next();
+    });
+};
+
+// 7. Log Hatch Event and Respond
+module.exports.logHatchEvent = (req, res) => {
+    const { user_id, egg_type_id } = res.locals.hatchData;
+    const { newDinosaurId, chosenDexNum, eggRarity, randomHeight, randomWeight } = res.locals;
+    const hatched_on = new Date();
+
+    const hatchData = {
+        user_id,
+        egg_type_id,
+        dinosaur_id: newDinosaurId,
+        hatched_on
+    };
+
+    hatchEventModel.insertSingle(hatchData, (error, hatchResults) => {
+        if (error) {
+            console.error("Error insertSingle (createHatchEvent - hatch):", error);
+            return res.status(500).json(error);
+        }
+
+        return res.status(201).json({
+            hatch_id: hatchResults.insertId,
+            user_id,
+            egg_type_id,
+            dinosaur_id: newDinosaurId,
+            hatched_on,
+            dex_num: chosenDexNum,
+            rarity: eggRarity,
+            height: randomHeight,
+            weight: randomWeight
+        });
+    });
+};
 
 console.log("hatchEvent controller loaded");
-

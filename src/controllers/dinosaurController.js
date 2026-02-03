@@ -92,14 +92,15 @@ module.exports.readDinosaurById = (req, res) => {
 };
 
 
-module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
+// ##############################################################
+// READ DINOSAUR WITH DEX INFO MIDDLEWARE
+// ##############################################################
 
-    const data = { 
-        id: req.params.id 
-    }
+// Middleware 1: Fetch Dinosaur
+module.exports.fetchDinosaurForDex = (req, res, next) => {
+    const data = { id: req.params.id };
 
-    const dinoCallback = (error, results) => {
-
+    dinosaurModel.selectById(data, (error, results) => {
         if (error) {
             console.error("readDinosaurByIdWithDexInfo error:", error);
             return res.status(500).json(error);
@@ -109,70 +110,65 @@ module.exports.readDinosaurByIdWithDexInfo = (req, res) => {
             return res.status(404).send("Dinosaur not found");
         }
 
-        const dinosaur = results[0];
+        res.locals.dinosaur = results[0];
+        next();
+    });
+};
 
-        const dexData = { 
-            number: dinosaur.dex_num 
+// Middleware 2: Fetch Dex Info and Respond
+module.exports.fetchDexInfoAndRespond = (req, res) => {
+    const dinosaur = res.locals.dinosaur;
+    const dexData = { number: dinosaur.dex_num };
+
+    dinosaurDexModel.selectByNumber(dexData, (error, dexResults) => {
+        if (error) {
+            console.error("readDinosaurByIdWithDexInfo error:", error);
+            return res.status(500).json(error);
         }
 
-        const dexCallback = (error, dexResults) => {
+        let combined;
 
-            if (error) {
-                console.error("readDinosaurByIdWithDexInfo error:", error);
-                return res.status(500).json(error);
-            }
+        if (dexResults.length == 0) {
+            combined = {
+                id: dinosaur.id,
+                owner_id: dinosaur.owner_id,
+                dex_num: dinosaur.dex_num,
+                level: dinosaur.level,
+                xp: dinosaur.xp,
+                height: dinosaur.height,
+                weight: dinosaur.weight,
+                dexInfo: "No additional dex info available"
+            };
+        } else {
+            const dexInfo = dexResults[0];
+            combined = {
+                id: dinosaur.id,
+                owner_id: dinosaur.owner_id,
+                dex_num: dinosaur.dex_num,
+                level: dinosaur.level,
+                xp: dinosaur.xp,
+                height: dinosaur.height,
+                weight: dinosaur.weight,
+                dexInfo: {
+                    number: dexInfo.number,
+                    name: dexInfo.name,
+                    diet: dexInfo.diet,
+                    rarity: dexInfo.rarity
+                }
+            };
+        }
 
-            let combined;
-
-            if (dexResults.length == 0) {
-
-                combined = {
-                    id: dinosaur.id,
-                    owner_id: dinosaur.owner_id,
-                    dex_num: dinosaur.dex_num,
-                    level: dinosaur.level,
-                    xp: dinosaur.xp,
-                    height: dinosaur.height,
-                    weight: dinosaur.weight,
-                    dexInfo: "No additional dex info available"
-                };
-
-            } 
-            else {
-
-                const dexInfo = dexResults[0];
-
-                combined = {
-                    id: dinosaur.id,
-                    owner_id: dinosaur.owner_id,
-                    dex_num: dinosaur.dex_num,
-                    level: dinosaur.level,
-                    xp: dinosaur.xp,
-                    height: dinosaur.height,
-                    weight: dinosaur.weight,
-
-                    dexInfo: {
-                        number: dexInfo.number,
-                        name: dexInfo.name,
-                        diet: dexInfo.diet,
-                        rarity: dexInfo.rarity
-                    }
-                };
-            }
-
-            return res.status(200).json(combined);
-        };
-
-        dinosaurDexModel.selectByNumber(dexData, dexCallback);
-    };
-
-    dinosaurModel.selectById(data, dinoCallback);
+        return res.status(200).json(combined);
+    });
 };
 
 
+// ##############################################################
+// UPDATE DINOSAUR MIDDLEWARE
+// ##############################################################
 
-module.exports.updateDinosaurById = (req, res) => {
-
+// Middleware 1: Check request body and fetch existing dinosaur
+module.exports.checkUpdateRequestAndFetchDino = (req, res, next) => {
     const id = req.params.id;
 
     // What client is trying to update (can be partial)
@@ -199,8 +195,7 @@ module.exports.updateDinosaurById = (req, res) => {
         });
     }
 
-    const findCallback = (error, results) => {
-
+    dinosaurModel.selectById({ id: id }, (error, results) => {
         if (error) {
             console.error("updateDinosaurById error:", error);
             return res.status(500).json(error);
@@ -212,58 +207,50 @@ module.exports.updateDinosaurById = (req, res) => {
             });
         }
 
-        const current = results[0];
+        res.locals.currentDino = results[0];
+        res.locals.incomingUpdates = incoming;
+        next();
+    });
+};
 
+// Middleware 2: Perform Update
+module.exports.performDinosaurUpdate = (req, res) => {
+    const current = res.locals.currentDino;
+    const incoming = res.locals.incomingUpdates;
 
-        const dataToUpdate = {
-
-            id: current.id,
-
-            owner_id: (incoming.owner_id != null) ? incoming.owner_id : current.owner_id,
-
-            dex_num: (incoming.dex_num != null) ? incoming.dex_num : current.dex_num,
-
-            level: (incoming.level != null) ? incoming.level : current.level,
-
-            xp: (incoming.xp != null) ? incoming.xp : current.xp,
-
-            height: (incoming.height != null) ? incoming.height : current.height,
-
-            weight: (incoming.weight != null) ? incoming.weight : current.weight
-
-        };
-
-
-        const updateCallback = (error, results) => {
-
-            if (error) {
-                console.error("updateDinosaurById error:", error);
-                return res.status(500).json(error);
-            }
-
-            if (results.affectedRows == 0) {
-                return res.status(404).json({ 
-                    message: "Dinosaur not found" 
-                });
-            }
-
-            return res.status(200).json({
-                message: "Dinosaur updated",
-
-                id: dataToUpdate.id,
-                owner_id: dataToUpdate.owner_id,
-                dex_num: dataToUpdate.dex_num,
-                level: dataToUpdate.level,
-                xp: dataToUpdate.xp,
-                height: dataToUpdate.height,
-                weight: dataToUpdate.weight
-            });
-        };
-
-        dinosaurModel.updateById(dataToUpdate, updateCallback);
+    const dataToUpdate = {
+        id: current.id,
+        owner_id: (incoming.owner_id != null) ? incoming.owner_id : current.owner_id,
+        dex_num: (incoming.dex_num != null) ? incoming.dex_num : current.dex_num,
+        level: (incoming.level != null) ? incoming.level : current.level,
+        xp: (incoming.xp != null) ? incoming.xp : current.xp,
+        height: (incoming.height != null) ? incoming.height : current.height,
+        weight: (incoming.weight != null) ? incoming.weight : current.weight
     };
 
-    dinosaurModel.selectById({ id: id }, findCallback);
+    dinosaurModel.updateById(dataToUpdate, (error, results) => {
+        if (error) {
+            console.error("updateDinosaurById error:", error);
+            return res.status(500).json(error);
+        }
+
+        if (results.affectedRows == 0) {
+            return res.status(404).json({ 
+                message: "Dinosaur not found" 
+            });
+        }
+
+        return res.status(200).json({
+            message: "Dinosaur updated",
+            id: dataToUpdate.id,
+            owner_id: dataToUpdate.owner_id,
+            dex_num: dataToUpdate.dex_num,
+            level: dataToUpdate.level,
+            xp: dataToUpdate.xp,
+            height: dataToUpdate.height,
+            weight: dataToUpdate.weight
+        });
+    });
 };
 
 
@@ -293,3 +280,4 @@ module.exports.deleteDinosaurById = (req, res) => {
 };
 
 console.log("dinosaur controller loaded");
+
