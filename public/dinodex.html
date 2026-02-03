@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DinoDex - Dinosaur Kingdom</title>
+    <link rel="stylesheet" href="css/dinosaurdex.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -28,16 +29,15 @@
         </div>
 
         <div class="card p-4 mb-4">
-            <div class="filter-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search dinosaurs..."
-                    style="flex: 2; min-width: 200px;">
-                <select id="dietFilter" class="form-control" style="flex: 1; min-width: 150px;">
+            <div class="filter-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search dinosaurs...">
+                <select id="dietFilter" class="form-control filter-select">
                     <option value="">All Diets</option>
                     <option value="Carnivore">Carnivore</option>
                     <option value="Herbivore">Herbivore</option>
                     <option value="Omnivore">Omnivore</option>
                 </select>
-                <select id="rarityFilter" class="form-control" style="flex: 1; min-width: 150px;">
+                <select id="rarityFilter" class="form-control filter-select">
                     <option value="">All Rarities</option>
                     <option value="Common">Common</option>
                     <option value="Rare">Rare</option>

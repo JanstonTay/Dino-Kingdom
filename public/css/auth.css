@@ -1,0 +1,25 @@
+/* Extracted from login.html and register.html */
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    max-width: 400px;
+    width: 100%;
+}
+
+.auth-card-wide {
+    max-width: 450px;
+    width: 100%;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+.auth-link {
+    color: var(--primary-color);
+}

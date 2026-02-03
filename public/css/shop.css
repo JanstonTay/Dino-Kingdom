@@ -1,5 +1,6 @@
 body {
-    background: #d9fff1; /* same vibe as your dinodex page */
+    background: #d9fff1;
+    /* same vibe as your dinodex page */
 }
 
 .page-title {
@@ -26,6 +27,7 @@ body {
     background: #0b6b2a;
     border: none;
 }
+
 .btn-green:hover {
     background: #095823;
 }
@@ -42,4 +44,15 @@ body {
     background: rgba(11, 107, 42, 0.12);
     color: #0b6b2a;
     border: 1px solid rgba(11, 107, 42, 0.2);
+}
+
+/* Extracted from shop.html */
+#userBalance {
+    font-size: 1.2rem;
+    display: none;
+}
+
+#pointsDisplay {
+    color: var(--primary-color);
+    font-weight: bold;
 }
