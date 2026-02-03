@@ -16,6 +16,13 @@ router.post("/register", [
     jwtMiddleware.sendToken
 ]);
 
+router.post("/login", [
+    userController.login,
+    bcryptMiddleware.comparePassword,
+    jwtMiddleware.generateToken,
+    jwtMiddleware.sendToken
+]);
+
 router.get("/:user_id", userController.getUserById);
 router.put("/:user_id", [userController.checkUserExists, userController.checkUsernameAvailability, userController.performUpdateUser]);
 

@@ -177,4 +177,35 @@ module.exports.performUpdateUser = (req, res, next) => {
     });
 };
 
+module.exports.login = (req, res, next) => {
+    const data = {
+        username: req.body.username || req.body.email,
+        email: req.body.email || req.body.username
+    };
+
+    if (!data.username && !data.email) {
+        return res.status(400).json({
+            message: "Missing username or email"
+        });
+    }
+
+    userModel.selectByUsernameOrEmail(data, (error, results) => {
+        if (error) {
+            console.error("selectByUsernameOrEmail error:", error);
+            return res.status(500).json(error);
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.locals.userId = results[0].user_id;
+        res.locals.hash = results[0].password;
+        res.locals.message = "Login successful";
+        next();
+    });
+};
+
 console.log("user controller loaded");
