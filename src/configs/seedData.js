@@ -29,10 +29,10 @@ INSERT INTO EggType (name, rarity, price_points) VALUES
 // Seed data for FoodTypes (6 food types based on user's image)
 const foodTypeData = `
 INSERT INTO FoodType (name, diet, xp_gain, price_points) VALUES
-('Raw Meat', 'carnivore', 40, 30),
+('Raw Meat', 'carnivore', 35, 30),
 ('Fresh Fish', 'carnivore', 60, 45),
 ('Prime Steak', 'carnivore', 120, 80),
-('Leafy Green', 'herbivore', 40, 30),
+('Leafy Green', 'herbivore', 35, 30),
 ('Ancient Fern', 'herbivore', 60, 45),
 ('Fruit Mix', 'herbivore', 120, 80);
 `;
