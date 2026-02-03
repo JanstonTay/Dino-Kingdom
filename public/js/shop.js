@@ -187,10 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'Buy';
         btn.disabled = false;
       } else {
-        alert(`Purchase failed: ${response.message || 'Unknown error'}`);
+        alert(`Purchase failed: ${getErrorMessage(response)}`);
         btn.textContent = 'Buy';
         btn.disabled = false;
       }
-    }, 'POST', data, token);
+    }, 'POST', data);
   }
 });

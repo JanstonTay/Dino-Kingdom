@@ -75,3 +75,15 @@ module.exports.updateById = (data, callback) => {
     pool.query(SQLSTATEMENT, VALUES, callback);
 
 }
+
+module.exports.selectByUsernameOrEmail = (data, callback) => {
+
+    const SQLSTATEMENT = `
+        SELECT user_id, username, email, password, points FROM User
+        WHERE username = ? OR email = ?;
+    `;
+
+    const VALUES = [data.username, data.email];
+
+    pool.query(SQLSTATEMENT, VALUES, callback);
+}

@@ -12,6 +12,11 @@
 <body>
     <nav class="navbar">
         <a href="index.html" class="logo">DinoKingdom</a>
+        <button class="navbar-toggle" id="navbarToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         <ul class="nav-links" id="navLinks">
             <li><a href="dinosaur.html" class="nav-link active">My Dinos</a></li>
             <li><a href="dinodex.html" class="nav-link">DinoDex</a></li>
@@ -42,6 +47,12 @@
 
             <div id="foodSelectContainer">
                 Loading food...
+            </div>
+
+            <div class="mt-4">
+                <label for="feedQuantity" class="form-label">Quantity: <span id="feedQtyDisplay">1</span></label>
+                <input type="range" class="form-range" id="feedQuantity" min="1" max="10" value="1"
+                    style="width: 100%;">
             </div>
 
             <div class="mt-4 text-center">

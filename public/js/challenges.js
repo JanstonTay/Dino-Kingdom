@@ -74,10 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.remove('btn-outline');
                 btn.classList.add('btn-primary');
             } else {
-                alert(`Submission failed: ${result.message}`);
+                alert(`Submission failed: ${getErrorMessage(result)}`);
                 btn.disabled = false;
                 btn.textContent = 'Complete';
             }
-        }, 'POST', data, token);
+        }, 'POST', data);
     }
 });

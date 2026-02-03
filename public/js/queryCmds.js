@@ -3,7 +3,10 @@
 // This function uses the fetch API to make a request to the server.
 //=====================================================================================
 function fetchMethod(url, callback, method = "GET", data = null, token = null) {
-    console.log("fetchMethod: ", url, method, data, token);
+    // Auto-inject token from localStorage if not provided
+    const authToken = token || localStorage.getItem('token');
+
+    console.log(`fetchMethod [${method}]: ${url}`, { data, hasToken: !!authToken });
 
     const headers = {};
 
@@ -11,8 +14,8 @@ function fetchMethod(url, callback, method = "GET", data = null, token = null) {
         headers["Content-Type"] = "application/json";
     }
 
-    if (token) {
-        headers["Authorization"] = "Bearer " + token;
+    if (authToken) {
+        headers["Authorization"] = "Bearer " + authToken;
     }
 
     let options = {
@@ -24,17 +27,34 @@ function fetchMethod(url, callback, method = "GET", data = null, token = null) {
         options.body = JSON.stringify(data);
     }
 
-    fetch(url, options) 
+    fetch(url, options)
         .then((response) => {
-            
             if (response.status === 204) {
-                callback(response.status, {});
+                return callback(response.status, {});
             }
-            else {
-                response.json().then((responseData) => callback(response.status, responseData));
-            }
+
+            // Attempt to parse JSON, handle non-JSON responses gracefully
+            response.text().then(text => {
+                let responseData = {};
+                try {
+                    responseData = JSON.parse(text);
+                } catch (e) {
+                    console.warn("Response is not JSON:", text);
+                    responseData = { message: text };
+                }
+
+                // Standardize error reporting for the callback
+                if (!response.ok && !responseData.message && !responseData.error) {
+                    responseData.message = `Request failed with status ${response.status}`;
+                }
+
+                callback(response.status, responseData);
+            });
         })
-        .catch((error) => console.error(`Error from ${method} ${url}: `, error))
+        .catch((error) => {
+            console.error(`Network Error from ${method} ${url}: `, error);
+            callback(0, { message: "Network error or server unavailable" });
+        });
 }
 
 //=====================================================================================

@@ -9,7 +9,7 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
     messageDiv.style.color = 'var(--text-muted)';
 
     const data = {
-        email: email,
+        email: email, // Controller will treat this as username or email
         password: password
     };
 

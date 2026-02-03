@@ -164,24 +164,39 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmFeedBtn.addEventListener('click', () => {
         if (!selectedDinoId || (!selectedFoodId && selectedFoodId !== 0)) return;
 
+        const quantityInput = document.getElementById("feedQuantity");
+        const quantity = parseInt(quantityInput ? quantityInput.value : 1, 10);
+
         const data = {
             user_id: userId,
             dinosaur_id: selectedDinoId,
             food_type_id: selectedFoodId,
-            quantity: 1
+            quantity: quantity
         };
 
         confirmFeedBtn.textContent = 'Feeding...';
 
         fetchMethod('/api/dinosaurFeed', (status, result) => {
-            if (status === 201) {
-                alert(`Yum! Dino gained ${result.xp_gained} XP.`);
+            if (status === 201 || status === 200) {
+                alert(`Yum! Dino ate ${quantity} item(s) and gained ${result.xp_gained || 0} XP.`);
                 feedModal.style.display = 'none';
-                fetchMyDinos(); // Refresh stats
+                selectedDinoId = null;
+                selectedFoodId = null;
+                fetchMyDinos();
             } else {
-                alert(`Feeding failed: ${result.message}`);
+                alert(`Feeding failed: ${getErrorMessage(result)}`);
             }
             confirmFeedBtn.textContent = 'Feed Dino';
-        }, 'POST', data, token);
+            confirmFeedBtn.disabled = false;
+        }, 'POST', data);
     });
+
+    // Slider listener
+    const qtyInput = document.getElementById("feedQuantity");
+    const qtyDisplay = document.getElementById("feedQtyDisplay");
+    if (qtyInput && qtyDisplay) {
+        qtyInput.addEventListener("input", (e) => {
+            qtyDisplay.textContent = e.target.value;
+        });
+    }
 });

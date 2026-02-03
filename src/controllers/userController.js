@@ -128,13 +128,16 @@ module.exports.checkLoginBody = (req, res, next) => {
 };
 
 
-// Get user by email for login
+// Get user by username or email for login
 module.exports.getUserByEmail = (req, res, next) => {
-    const data = { email: req.body.email };
+    const data = {
+        username: req.body.email, // "email" field in body might contain username or email
+        email: req.body.email
+    };
 
-    userModel.selectByEmail(data, (error, results) => {
+    userModel.selectByUsernameOrEmail(data, (error, results) => {
         if (error) {
-            console.error("selectByEmail error:", error);
+            console.error("selectByUsernameOrEmail error:", error);
             return res.status(500).json(error);
         }
         if (results.length === 0) {
@@ -222,4 +225,3 @@ module.exports.updateUserById = (req, res) => {
 };
 
 console.log("user controller loaded");
-
