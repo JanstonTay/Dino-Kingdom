@@ -61,7 +61,7 @@ function applyXpAndLevel(dinosaur, gainedXp) {
             level += 1;
             height = height * 1.5;
             weight = weight * 1.5;
-        } 
+        }
         else {
             break;
         }
@@ -71,8 +71,8 @@ function applyXpAndLevel(dinosaur, gainedXp) {
     height = Number(height.toFixed(2));
     weight = Number(weight.toFixed(2));
 
-    return { 
-        level, xp, height, weight 
+    return {
+        level, xp, height, weight
     };
 
 }
@@ -300,7 +300,7 @@ module.exports.updateStatsAndRespond = (req, res) => {
     const updatedStats = applyXpAndLevel(dinosaur, gainedXp);
 
     const statsData = {
-        dinosaur_id: dinosaur.dinosaur_id, // Note: sql query alias was dinosaur_id
+        dinosaur_id: dinosaur.id, // Fixed: use .id instead of .dinosaur_id
         level: updatedStats.level,
         xp: updatedStats.xp,
         height: updatedStats.height,

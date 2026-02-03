@@ -7,7 +7,7 @@ module.exports.getAllUsers = (req, res) => {
         if (error) {
             console.error("selectAll error:", error);
             return res.status(500).json(error);
-        } 
+        }
         else {
             return res.status(200).json(results);
         }
@@ -34,7 +34,7 @@ module.exports.getUserById = (req, res) => {
                 message: "User not found"
             });
         }
-        
+
         else {
             return res.status(200).json(results[0]);
         }
@@ -49,53 +49,48 @@ module.exports.getUserById = (req, res) => {
 
 module.exports.checkForExistingUsername = (req, res, next) => {
     const data = {
-        username: req.body.username
+        username: req.body.username,
+        email: req.body.email
     };
 
-    if (!data.username) {
+    if (!data.username || !data.email || !req.body.password) {
         return res.status(400).json({
-            message: "Missing username"
+            message: "Missing username, email or password"
         });
     }
 
-    const checkUsername = {
-        username: data.username
-    };
-
-    userModel.selectByUsername(checkUsername, (error, results) => {
+    userModel.selectByUsernameOrEmail(data, (error, results) => {
         if (error) {
-            console.error("selectByUsername error:", error);
+            console.error("selectByUsernameOrEmail error:", error);
             return res.status(500).json(error);
         }
 
         if (results.length > 0) {
             return res.status(409).json({
-                message: "Username taken"
+                message: "Username or email already taken"
             });
         }
 
-        // Pass data to next middleware
-        res.locals.username = data.username;
         next();
     });
 };
 
 module.exports.createNewUser = (req, res, next) => {
     const data = {
-        username: res.locals.username
+        username: req.body.username,
+        email: req.body.email,
+        password: res.locals.hash
     };
 
     userModel.insertSingle(data, (error, results) => {
         if (error) {
             console.error("insertSingle error:", error);
             return res.status(500).json(error);
-        } 
-        
-        return res.status(201).json({
-            user_id: results.insertId,
-            username: data.username,
-            points: 0
-        });
+        }
+
+        res.locals.userId = results.insertId;
+        res.locals.message = "Registration successful";
+        next();
     });
 };
 
