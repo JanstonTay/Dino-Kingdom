@@ -7,13 +7,82 @@ document.addEventListener('DOMContentLoaded', () => {
     // We allow viewing without login, but prompt on complete
 
     // Load Data
-    fetchMethod('/api/challenges', (status, challenges) => {
-        if (status === 200) {
-            renderChallenges(challenges);
-        } else {
-            challengesGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">Failed to load challenges.</p>';
-        }
-    });
+    function loadChallenges() {
+        fetchMethod('/api/challenges', (status, challenges) => {
+            if (status === 200) {
+                renderChallenges(challenges);
+            } else {
+                challengesGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">Failed to load challenges.</p>';
+            }
+        });
+    }
+
+    loadChallenges();
+
+    // Create Challenge Form Logic
+    const createChallengeSection = document.getElementById('createChallengeSection');
+    const showCreateFormBtn = document.getElementById('showCreateFormBtn');
+    const cancelCreateBtn = document.getElementById('cancelCreateBtn');
+    const createChallengeForm = document.getElementById('createChallengeForm');
+
+    if (showCreateFormBtn) {
+        showCreateFormBtn.addEventListener('click', () => {
+            if (!userId || !token) {
+                alert('Please login to create challenges.');
+                window.location.href = 'login.html';
+                return;
+            }
+            createChallengeSection.classList.remove('hidden');
+            showCreateFormBtn.parentElement.classList.add('hidden');
+        });
+    }
+
+    if (cancelCreateBtn) {
+        cancelCreateBtn.addEventListener('click', () => {
+            createChallengeSection.classList.add('hidden');
+            showCreateFormBtn.parentElement.classList.remove('hidden');
+            createChallengeForm.reset();
+        });
+    }
+
+    if (createChallengeForm) {
+        createChallengeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const description = document.getElementById('challengeDescription').value;
+            const points = parseInt(document.getElementById('challengePoints').value);
+
+            if (!description || isNaN(points)) {
+                alert('Please provide a valid description and points.');
+                return;
+            }
+
+            const data = {
+                user_id: userId,
+                description: description,
+                points: points
+            };
+
+            const submitBtn = createChallengeForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
+            fetchMethod('/api/challenges', (status, result) => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Challenge';
+
+                if (status === 201) {
+                    alert('Challenge created successfully!');
+                    createChallengeSection.classList.add('hidden');
+                    showCreateFormBtn.parentElement.classList.remove('hidden');
+                    createChallengeForm.reset();
+                    loadChallenges(); // Refresh the list
+                } else {
+                    alert(`Failed to create challenge: ${getErrorMessage(result)}`);
+                }
+            }, 'POST', data);
+        });
+    }
 
     function renderChallenges(challenges) {
         challengesGrid.innerHTML = '';
