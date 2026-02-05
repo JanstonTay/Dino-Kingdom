@@ -1,10 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dinoGrid = document.getElementById('dinoGrid');
     const searchInput = document.getElementById('searchInput');
-    const dietFilter = document.getElementById('dietFilter');
-    const rarityFilter = document.getElementById('rarityFilter');
+    // New dropdown elements
+    const dietDropdown = document.getElementById('dietDropdown');
+    const dietSelected = document.getElementById('dietSelected');
+    const rarityDropdown = document.getElementById('rarityDropdown');
+    const raritySelected = document.getElementById('raritySelected');
 
     let allDinos = [];
+    let currentFilters = {
+        diet: '',
+        rarity: ''
+    };
 
     // Show loading state
     dinoGrid.innerHTML = '<p class="text-center text-muted" style="grid-column: 1/-1;">Loading dinosaurs...</p>';
@@ -67,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function filterDinos() {
         const searchTerm = searchInput.value.toLowerCase();
-        const diet = dietFilter.value.toLowerCase();
-        const rarity = rarityFilter.value;
+        const diet = currentFilters.diet.toLowerCase();
+        const rarity = currentFilters.rarity;
 
         const filtered = allDinos.filter(dino => {
             const matchesSearch = dino.name.toLowerCase().includes(searchTerm);
@@ -80,7 +87,46 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDinos(filtered);
     }
 
+    // Custom Dropdown Logic
+    function setupDropdown(dropdown, selectedElem, filterKey) {
+        selectedElem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            document.querySelectorAll('.custom-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        });
+
+        const options = dropdown.querySelectorAll('.dropdown-option');
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const value = option.getAttribute('data-value');
+                const text = option.textContent;
+
+                // Update UI
+                selectedElem.textContent = text;
+                options.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+
+                // Update State & Filter
+                currentFilters[filterKey] = value;
+                dropdown.classList.remove('active');
+                filterDinos();
+            });
+        });
+    }
+
+    setupDropdown(dietDropdown, dietSelected, 'diet');
+    setupDropdown(rarityDropdown, raritySelected, 'rarity');
+
+    // Close dropdowns on outside click
+    window.addEventListener('click', () => {
+        document.querySelectorAll('.custom-dropdown').forEach(d => {
+            d.classList.remove('active');
+        });
+    });
+
     searchInput.addEventListener('input', filterDinos);
-    dietFilter.addEventListener('change', filterDinos);
-    rarityFilter.addEventListener('change', filterDinos);
 });

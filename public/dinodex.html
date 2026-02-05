@@ -33,22 +33,30 @@
             <p class="text-muted">Discover all known species</p>
         </div>
 
-        <div class="card p-4 mb-4">
+        <div class="card p-4 mb-4" id="filterCard">
             <div class="filter-group">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search dinosaurs...">
-                <select id="dietFilter" class="form-control filter-select">
-                    <option value="">All Diets</option>
-                    <option value="Carnivore">Carnivore</option>
-                    <option value="Herbivore">Herbivore</option>
-                    <option value="Omnivore">Omnivore</option>
-                </select>
-                <select id="rarityFilter" class="form-control filter-select">
-                    <option value="">All Rarities</option>
-                    <option value="Common">Common</option>
-                    <option value="Rare">Rare</option>
-                    <option value="Epic">Epic</option>
-                    <option value="Legendary">Legendary</option>
-                </select>
+
+                <div class="custom-dropdown filter-select" id="dietDropdown">
+                    <div class="dropdown-selected" id="dietSelected">All Diets</div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option selected" data-value="">All Diets</div>
+                        <div class="dropdown-option" data-value="Carnivore">Carnivore</div>
+                        <div class="dropdown-option" data-value="Herbivore">Herbivore</div>
+                        <div class="dropdown-option" data-value="Omnivore">Omnivore</div>
+                    </div>
+                </div>
+
+                <div class="custom-dropdown filter-select" id="rarityDropdown">
+                    <div class="dropdown-selected" id="raritySelected">All Rarities</div>
+                    <div class="dropdown-options">
+                        <div class="dropdown-option selected" data-value="">All Rarities</div>
+                        <div class="dropdown-option" data-value="Common">Common</div>
+                        <div class="dropdown-option" data-value="Rare">Rare</div>
+                        <div class="dropdown-option" data-value="Epic">Epic</div>
+                        <div class="dropdown-option" data-value="Legendary">Legendary</div>
+                    </div>
+                </div>
             </div>
         </div>
 
