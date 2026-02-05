@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'card fade-in';
             card.innerHTML = `
-                <div style="height: 180px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);">
-                    <img src="${imgPath}" alt="${dexInfo.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
+                <div style="height: 200px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);">
+                    <img src="${imgPath}" alt="${dexInfo.name}" style="width: 160px; height: 160px; object-fit: contain;" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">
                 </div>
                 <h3>${dexInfo.name} <span style="font-size: 0.8rem; color: var(--text-muted);">Lvl ${dino.level}</span></h3>
                 <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">

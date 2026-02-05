@@ -97,14 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         imgSrc = foodImages[item.name] || '';
       }
 
-      // XP info for food
-      let xpInfo = '';
-      if (type === 'food' && item.xp_gain) {
-        xpInfo = `<div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 0.5rem;">+${item.xp_gain} XP</div>`;
-      }
-
-      // Rarity info for eggs
+      // XP and Badges section
       let badges = '';
+      // Rarity for eggs
       if (type === 'eggs' && item.rarity) {
         let rarityColor = '#a0aec0';
         if (item.rarity === 'Rare') rarityColor = '#4299e1';
@@ -118,23 +113,35 @@ document.addEventListener('DOMContentLoaded', () => {
         badges += `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap;">${item.diet}</span>`;
       }
 
-      const badgesSection = badges ? `<div style="display: flex; justify-content: center; gap: 0.3rem; margin-top: 0.5rem; flex-wrap: wrap;">${badges}</div>` : '';
+      // XP info for food - now as a badge
+      if (type === 'food' && item.xp_gain) {
+        badges += `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--primary-color); color: var(--primary-color); white-space: nowrap;">+${item.xp_gain} XP</span>`;
+      }
+
+      const badgesSection = badges ? `<div style="display: flex; justify-content: center; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap;">${badges}</div>` : '';
 
       card.innerHTML = `
-                <div style="height: 150px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem;">
-                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="font-size:3rem;">🥚</span>'}
+                <div style="height: 160px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; border-radius: 8px; background: rgba(0,0,0,0.1);">
+                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="width: 120px; height: 120px; object-fit: contain;">` : '<span style="font-size:3rem;">🥚</span>'}
                 </div>
                 <h3>${item.name}</h3>
                 ${badgesSection}
-                ${xpInfo}
-                <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: bold; color: var(--primary-color); white-space: nowrap; flex-shrink: 0; font-size: 1rem;">${price}&nbsp;pts</span>
-                    <button class="btn btn-outline purchase-btn" 
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0.5rem;">
+                        <span style="font-weight: 800; color: var(--primary-color); font-size: 1.2rem; letter-spacing: -0.5px;">${price}&nbsp;<span style="font-size: 0.8rem; font-weight: 400; opacity: 0.8;">PTS</span></span>
+                        <div class="quantity-selector" style="background: rgba(84, 250, 203, 0.05); border: 1px solid rgba(84, 250, 203, 0.2); border-radius: 8px; display: flex; align-items: center; padding: 2px;">
+                            <button class="qty-btn minus" data-id="${itemId}" style="width: 28px; height: 28px; background: transparent; border: none; color: var(--primary-color); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">−</button>
+                            <span class="qty-display" data-id="${itemId}" style="width: 30px; text-align: center; color: var(--white); font-weight: 800; font-size: 1.1rem; user-select: none;">1</span>
+                            <button class="qty-btn plus" data-id="${itemId}" style="width: 28px; height: 28px; background: transparent; border: none; color: var(--primary-color); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">+</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary purchase-btn" 
                         data-type="${type === 'eggs' ? 'egg' : 'food'}" 
                         data-id="${itemId}" 
                         data-price="${price}"
-                        data-name="${item.name}">
-                        Buy
+                        data-name="${item.name}"
+                        style="width: 100%; height: 46px; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 12px; box-shadow: 0 4px 15px rgba(84, 250, 203, 0.3);">
+                        Buy Now
                     </button>
                 </div>
             `;
@@ -145,6 +152,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners to buttons
     document.querySelectorAll('.purchase-btn').forEach(btn => {
       btn.addEventListener('click', handlePurchase);
+    });
+
+    // Add event listeners for quantity buttons
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        const display = document.querySelector(`.qty-display[data-id="${id}"]`);
+        let val = parseInt(display.textContent);
+        if (e.target.classList.contains('plus')) {
+          val++;
+        } else {
+          val = Math.max(1, val - 1);
+        }
+        display.textContent = val;
+      });
     });
   }
 
@@ -161,14 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemName = btn.dataset.name;
     const itemPrice = parseInt(btn.dataset.price);
 
+    const qtyDisplay = document.querySelector(`.qty-display[data-id="${itemId}"]`);
+    const quantity = parseInt(qtyDisplay.textContent) || 1;
+    const totalCost = itemPrice * quantity;
+
     // Optimistic check
     const currentPoints = parseInt(pointsDisplay.textContent);
-    if (currentPoints < itemPrice) {
-      alert('Not enough points!');
+    if (currentPoints < totalCost) {
+      alert(`Not enough points! Total cost for ${quantity} items is ${totalCost} pts.`);
       return;
     }
 
-    if (!confirm(`Buy ${itemName} for ${itemPrice} points?`)) return;
+    if (!confirm(`Buy ${quantity}x ${itemName} for a total of ${totalCost} points?`)) return;
 
     btn.disabled = true;
     btn.textContent = 'Buying...';
@@ -177,18 +203,19 @@ document.addEventListener('DOMContentLoaded', () => {
       user_id: parseInt(userId),
       item_type: itemType,
       item_id: parseInt(itemId),
-      quantity: 1
+      quantity: quantity
     };
 
     fetchMethod('/api/userPurchases', (status, response) => {
       if (status === 201) {
         alert('Purchase successful!');
         fetchUserPoints(); // Refresh points
-        btn.textContent = 'Buy';
+        btn.textContent = 'Buy Now';
         btn.disabled = false;
+        qtyDisplay.textContent = '1'; // Reset quantity
       } else {
         alert(`Purchase failed: ${getErrorMessage(response)}`);
-        btn.textContent = 'Buy';
+        btn.textContent = 'Buy Now';
         btn.disabled = false;
       }
     }, 'POST', data);

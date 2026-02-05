@@ -104,8 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.rarity === 'Legendary') rarityColor = '#ed8936';
 
             card.innerHTML = `
-                <div style="height: 150px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem;">
-                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="font-size:3rem;">🍖</span>'}
+                <div style="height: 160px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; border-radius: 8px; background: rgba(0,0,0,0.1);">
+                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="width: 120px; height: 120px; object-fit: contain;">` : '<span style="font-size:3rem;">🍖</span>'}
                 </div>
                 <h3>${item.name || 'Unknown'}</h3>
                 <div style="display: flex; justify-content: center; gap: 0.3rem; margin-top: 0.5rem; flex-wrap: wrap;">
