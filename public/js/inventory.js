@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dinosaurInfo = document.getElementById('dinosaurInfo');
     const closeHatchBtn = document.getElementById('closeHatchBtn');
 
-    
+
     // Image mappings
     const foodImages = {
         'Raw Meat': 'images/food/rawMeat.png',
@@ -108,8 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="font-size:3rem;">🍖</span>'}
                 </div>
                 <h3>${item.name || 'Unknown'}</h3>
-                ${item.rarity ? `<span style="font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid ${rarityColor}; color: ${rarityColor};">${item.rarity}</span>` : ''}
-                ${item.diet ? `<p class="text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">Diet: ${item.diet}</p>` : ''}
+                <div style="display: flex; justify-content: center; gap: 0.3rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    ${item.rarity ? `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid ${rarityColor}; color: ${rarityColor}; white-space: nowrap;">${item.rarity}</span>` : ''}
+                    ${item.diet ? `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap;">${item.diet}</span>` : ''}
+                </div>
                 <p style="margin-top: 0.5rem; font-size: 1.1rem;">Quantity: <strong>${item.quantity}</strong></p>
                 <div style="margin-top: 1rem;">
                     ${actionBtn}

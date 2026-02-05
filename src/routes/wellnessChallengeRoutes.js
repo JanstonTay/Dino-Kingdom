@@ -4,9 +4,9 @@ const controller = require("../controllers/wellnessChallengeController.js");
 
 router.get("/", controller.getAllChallenges);
 router.post("/", [
-    controller.checkChallengeBody, 
-    controller.checkCreatorExists, 
-    controller.insertChallenge, 
+    controller.checkChallengeBody,
+    controller.checkCreatorExists,
+    controller.insertChallenge,
     controller.readChallengeAfterCreation
 ]);
 

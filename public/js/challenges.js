@@ -100,9 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <h3>Challenge #${item.challenge_id}</h3>
                 <p style="font-size: 1.1rem; margin: 1rem 0;">${item.description}</p>
-                <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; color: var(--primary-color);">+${item.points} pts</span>
-                    <button class="btn btn-outline complete-btn" data-id="${item.challenge_id}" data-desc="${item.description}">Complete</button>
+                <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: bold; color: var(--primary-color); white-space: nowrap; flex-shrink: 0; font-size: 1rem;">+${item.points}&nbsp;pts</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-outline complete-btn" data-id="${item.challenge_id}" data-desc="${item.description}">Complete</button>
+                        <button class="btn btn-outline delete-btn" data-id="${item.challenge_id}" style="border-color: #ff4444; color: #ff4444;">Delete</button>
+                    </div>
                 </div>
             `;
 
@@ -112,6 +115,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.complete-btn').forEach(btn => {
             btn.addEventListener('click', handleComplete);
         });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', handleDelete);
+        });
+    }
+
+    function handleDelete(e) {
+        const challengeId = e.target.dataset.id;
+        if (!confirm('Are you sure you want to delete this challenge?')) return;
+
+        fetchMethod(`/api/challenges/${challengeId}?user_id=${userId}`, (status, result) => {
+            if (status === 204) {
+                alert('Challenge deleted successfully!');
+                loadChallenges(); // Refresh the list
+            } else {
+                alert(`Failed to delete challenge: ${getErrorMessage(result)}`);
+            }
+        }, 'DELETE');
     }
 
     function handleComplete(e) {

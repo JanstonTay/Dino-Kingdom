@@ -103,32 +103,32 @@ document.addEventListener('DOMContentLoaded', () => {
         xpInfo = `<div style="font-size: 0.85rem; color: var(--primary-color); margin-bottom: 0.5rem;">+${item.xp_gain} XP</div>`;
       }
 
-      // Diet info for food
-      let dietInfo = '';
-      if (type === 'food' && item.diet) {
-        dietInfo = `<div style="font-size: 0.8rem; color: var(--text-muted);">Diet: ${item.diet}</div>`;
-      }
-
       // Rarity info for eggs
-      let rarityInfo = '';
+      let badges = '';
       if (type === 'eggs' && item.rarity) {
         let rarityColor = '#a0aec0';
         if (item.rarity === 'Rare') rarityColor = '#4299e1';
         if (item.rarity === 'Epic') rarityColor = '#9f7aea';
         if (item.rarity === 'Legendary') rarityColor = '#ed8936';
-        rarityInfo = `<span style="font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid ${rarityColor}; color: ${rarityColor};">${item.rarity}</span>`;
+        badges += `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid ${rarityColor}; color: ${rarityColor}; white-space: nowrap;">${item.rarity}</span>`;
       }
+
+      // Diet info for food
+      if (type === 'food' && item.diet) {
+        badges += `<span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap;">${item.diet}</span>`;
+      }
+
+      const badgesSection = badges ? `<div style="display: flex; justify-content: center; gap: 0.3rem; margin-top: 0.5rem; flex-wrap: wrap;">${badges}</div>` : '';
 
       card.innerHTML = `
                 <div style="height: 150px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem;">
                     ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">` : '<span style="font-size:3rem;">🥚</span>'}
                 </div>
                 <h3>${item.name}</h3>
-                ${rarityInfo}
+                ${badgesSection}
                 ${xpInfo}
-                ${dietInfo}
-                <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; color: var(--primary-color);">${price} pts</span>
+                <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: bold; color: var(--primary-color); white-space: nowrap; flex-shrink: 0; font-size: 1rem;">${price}&nbsp;pts</span>
                     <button class="btn btn-outline purchase-btn" 
                         data-type="${type === 'eggs' ? 'egg' : 'food'}" 
                         data-id="${itemId}" 
