@@ -24,6 +24,12 @@ router.post("/login", [
 ]);
 
 router.get("/:user_id", userController.getUserById);
-router.put("/:user_id", [userController.checkUserExists, userController.checkUsernameAvailability, userController.performUpdateUser]);
+router.put("/:user_id", [
+    jwtMiddleware.verifyToken,
+    userController.verifyOwnership,
+    userController.checkUserExists,
+    userController.checkUsernameAvailability,
+    userController.performUpdateUser
+]);
 
 module.exports = router;

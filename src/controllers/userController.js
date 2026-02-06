@@ -201,11 +201,21 @@ module.exports.login = (req, res, next) => {
             });
         }
 
-        res.locals.userId = results[0].user_id;
         res.locals.hash = results[0].password;
         res.locals.message = "Login successful";
         next();
     });
+};
+
+module.exports.verifyOwnership = (req, res, next) => {
+    // If user is admin (e.g. userId 1), allow update? Or strictly own profile.
+    // For this brief, likely own profile only.
+    if (res.locals.userId != req.params.user_id) {
+        return res.status(403).json({
+            message: "Forbidden: You do not have permission to modify this user account"
+        });
+    }
+    next();
 };
 
 console.log("user controller loaded");
