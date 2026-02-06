@@ -189,8 +189,37 @@ _____________________
 
 
 
+---
 
 
+## 📁 Project Structure
+
+```text
+bed-ca2-JanstonTay/
+├── public/                 # Frontend assets
+│   ├── css/                # Stylesheets
+│   ├── images/             # Static images and dinosaur sprites
+│   ├── js/                 # Client-side JavaScript (XHR/Fetch logic)
+│   └── *.html              # Application pages (Home, Shop, My Dinos)
+├── src/                    # Backend source code
+│   ├── configs/            # Configuration and database seeding
+│   ├── controllers/        # Business logic and request handling
+│   ├── middlewares/        # Security and utility middlewares (JWT, Auth)
+│   ├── models/             # Database interactions and schemas
+│   ├── routes/             # API route definitions
+│   └── services/           # Core infrastructure (Database pooling)
+├── index.js                # Main application entry point
+├── .env                    # Environment configuration
+├── package.json            # Project dependencies and npm scripts
+└── README.md               # Project documentation
+```
+
+
+
+
+
+
+---
 
 
 🗄️ Database Entities (Key Tables)
@@ -306,7 +335,7 @@ ___________________
 
 
 👨‍💻 Author
-_____________
+ _____________
 
 
 Janston Tay
@@ -315,3 +344,16 @@ Backend Development — CA1 Project
 
 
 
+---
+
+
+## 🔮 Things to Add in the Future (Roadmap)
+
+
+- **Dinosaur Evolution System**: Allow dinosaurs to evolve into more powerful forms as they gain XP.
+- **Social Habitats**: Visit other users' habitats and interact with their dinosaurs.
+- **Automated Challenge Tracking**: Integration with wellness APIs (like Google Fit or Apple Health) to automatically track challenges.
+- **Habitat Customization**: Purchase and place decorations, plants, and terrain for your dinosaur habitats.
+- **Daily Login Streaks**: Bonus points and rare items for maintaining a daily wellness streak.
+- **Global Leaderboards**: Competitive boards for top collectors and wellness achievers.
+- **Mobile Application**: Port the experience to a dedicated mobile app using React Native.
