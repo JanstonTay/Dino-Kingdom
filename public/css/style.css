@@ -502,3 +502,103 @@ input[type=number] {
 .auth-footer {
     margin-top: 1.5rem;
 }
+
+/* Growth & Evolution Section */
+.mt-5 {
+    margin-top: 4rem;
+}
+
+.level-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.level-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.level-list li:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(5px);
+    border-color: var(--primary-color);
+}
+
+.level-badge {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+}
+
+.level-1 {
+    color: #a5b4fc;
+    background: rgba(165, 180, 252, 0.1);
+}
+
+.level-2 {
+    color: #818cf8;
+    background: rgba(129, 140, 248, 0.1);
+}
+
+.level-3 {
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.level-4 {
+    color: #4f46e5;
+    background: rgba(79, 70, 229, 0.1);
+}
+
+.level-max {
+    color: #000;
+    background: var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+.xp-req {
+    font-family: monospace;
+    color: var(--text-muted);
+}
+
+.level-list li:hover .xp-req {
+    color: var(--text-color);
+}
+
+.growth-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(0, 255, 200, 0.05);
+    border: 1px solid rgba(0, 255, 200, 0.2);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.multiplier-tag {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    text-shadow: 0 0 20px rgba(0, 255, 200, 0.4);
+}
+
+.growth-text {
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.text-xs {
+    font-size: 0.8rem;
+}
