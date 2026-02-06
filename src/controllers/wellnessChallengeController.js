@@ -62,8 +62,8 @@ module.exports.insertChallenge = (req, res, next) => {
 
 module.exports.readChallengeAfterCreation = (req, res, next) => {
 
-    const data = { 
-        challenge_id: res.locals.challenge_id 
+    const data = {
+        challenge_id: res.locals.challenge_id
     };
 
     const callback = (error, results) => {
@@ -80,9 +80,11 @@ module.exports.readChallengeAfterCreation = (req, res, next) => {
 
 
 module.exports.getAllChallenges = (req, res) => {
+    const data = {
+        user_id: req.query.user_id
+    };
 
     const callback = (error, results) => {
-
         if (error) {
             console.error("selectAllChallenges error:", error);
             return res.status(500).json(error);
@@ -91,14 +93,14 @@ module.exports.getAllChallenges = (req, res) => {
         return res.status(200).json(results);
     };
 
-    wellnessChallengeModel.selectAllChallenges(callback);
+    wellnessChallengeModel.selectAllChallenges(data, callback);
 };
 
 
 module.exports.getChallengeById = (req, res, next) => {
 
-    const data = { 
-        challenge_id: req.params.challenge_id 
+    const data = {
+        challenge_id: req.params.challenge_id
     };
 
     const callback = (error, results) => {
@@ -109,8 +111,8 @@ module.exports.getChallengeById = (req, res, next) => {
         }
 
         if (results.length === 0) {
-            return res.status(404).json({ 
-                message: "Challenge not found" 
+            return res.status(404).json({
+                message: "Challenge not found"
             });
         }
 
@@ -135,8 +137,8 @@ module.exports.checkOwnership = (req, res, next) => {
     }
 
     if (Number(challenge.creator_id) != Number(userId)) {
-        return res.status(403).json({ 
-            message: "Forbidden" 
+        return res.status(403).json({
+            message: "Forbidden"
         });
     }
 
@@ -173,8 +175,8 @@ module.exports.updateChallengeById = (req, res) => {
 
 module.exports.deleteChallengeById = (req, res) => {
 
-    const data = { 
-        challenge_id: req.params.challenge_id 
+    const data = {
+        challenge_id: req.params.challenge_id
     }
 
     const callback = (error, results) => {

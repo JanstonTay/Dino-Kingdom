@@ -108,6 +108,11 @@ const sampleChallenges = generateInsertSQL("WellnessChallenge", allTables.Wellne
 
 // Execute seeds using callbacks (no async/await)
 function runSeeds() {
+    if (!userData) {
+        console.log("No User data to seed, skipping...");
+        seedDinosaurDex();
+        return;
+    }
     console.log("Seeding User...");
 
     pool.query(userData, (error, results) => {
@@ -127,6 +132,11 @@ function runSeeds() {
 }
 
 function seedDinosaurDex() {
+    if (!dinosaurDexData) {
+        console.log("No DinosaurDex data to seed, skipping...");
+        seedEggTypes();
+        return;
+    }
     console.log("\nSeeding DinosaurDex...");
 
     pool.query(dinosaurDexData, (error, results) => {
@@ -141,6 +151,11 @@ function seedDinosaurDex() {
 }
 
 function seedEggTypes() {
+    if (!eggTypeData) {
+        console.log("No EggType data to seed, skipping...");
+        seedFoodTypes();
+        return;
+    }
     console.log("\nSeeding EggTypes...");
 
     pool.query(eggTypeData, (error, results) => {
@@ -155,6 +170,11 @@ function seedEggTypes() {
 }
 
 function seedFoodTypes() {
+    if (!foodTypeData) {
+        console.log("No FoodType data to seed, skipping...");
+        seedChallenges();
+        return;
+    }
     console.log("\nSeeding FoodTypes...");
 
     pool.query(foodTypeData, (error, results) => {
@@ -169,6 +189,12 @@ function seedFoodTypes() {
 }
 
 function seedChallenges() {
+    if (!sampleChallenges) {
+        console.log("\nNo Challenges data to seed, skipping...");
+        console.log("\nAll seeds completed successfully!");
+        process.exit(0);
+        return;
+    }
     console.log("\nSeeding Challenges...");
 
     pool.query(sampleChallenges, (error, results) => {

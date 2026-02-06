@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load Data
     function loadChallenges() {
-        fetchMethod('/api/challenges', (status, challenges) => {
+        const url = userId ? `/api/challenges?user_id=${userId}` : '/api/challenges';
+        fetchMethod(url, (status, challenges) => {
             if (status === 200) {
                 renderChallenges(challenges);
             } else {
@@ -102,14 +103,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'card fade-in';
             card.style.position = 'relative';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+
+            const isCompleted = item.completion_details !== null;
 
             card.innerHTML = `
                 <h3>Challenge #${item.challenge_id}</h3>
                 <p style="font-size: 1.1rem; margin: 1rem 0;">${item.description}</p>
+                ${isCompleted ? `
+                    <div style="background: rgba(var(--primary-rgb), 0.1); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; border: 1px dashed var(--primary-color);">
+                        <small style="display: block; color: var(--primary-color); font-weight: bold; margin-bottom: 0.25rem;">Your completion:</small>
+                        <p style="margin: 0; font-style: italic;">"${item.completion_details}"</p>
+                    </div>
+                ` : ''}
                 <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
                     <span style="font-weight: bold; color: var(--primary-color); white-space: nowrap; flex-shrink: 0; font-size: 1rem;">+${item.points}&nbsp;pts</span>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-outline complete-btn" data-id="${item.challenge_id}" data-desc="${item.description}">Complete</button>
+                        <button class="btn ${isCompleted ? 'btn-primary' : 'btn-outline'} complete-btn" 
+                                data-id="${item.challenge_id}" 
+                                data-desc="${item.description}" 
+                                ${isCompleted ? 'disabled' : ''}>
+                            ${isCompleted ? 'Completed' : 'Complete'}
+                        </button>
                         <button class="btn btn-outline delete-btn" data-id="${item.challenge_id}" style="border-color: #ff4444; color: #ff4444;">Delete</button>
                     </div>
                 </div>

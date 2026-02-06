@@ -13,13 +13,15 @@ module.exports.insertChallenge = (data, callback) => {
 }
 
 
-module.exports.selectAllChallenges = (callback) => {
-
+module.exports.selectAllChallenges = (data, callback) => {
     const SQLSTATEMENT = `
-        SELECT challenge_id, description, creator_id, points FROM WellnessChallenge;
+        SELECT wc.challenge_id, wc.description, wc.creator_id, wc.points, uc.details as completion_details
+        FROM WellnessChallenge wc
+        LEFT JOIN UserCompletion uc ON wc.challenge_id = uc.challenge_id AND uc.user_id = ?;
     `;
+    const VALUES = [data.user_id || null];
 
-    pool.query(SQLSTATEMENT, callback);
+    pool.query(SQLSTATEMENT, VALUES, callback);
 }
 
 
