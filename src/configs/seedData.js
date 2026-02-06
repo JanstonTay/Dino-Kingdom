@@ -1,108 +1,185 @@
 const pool = require("../services/db");
+const fs = require("fs");
+const path = require("path");
 
-// Seed data for DinosaurDex (12 dinosaurs based on the user's image)
-const dinosaurDexData = `
-INSERT INTO DinosaurDex (number, name, diet, rarity) VALUES
-(1, 'Tyrannosaurus Rex', 'omnivore', 'Legendary'),
-(2, 'Brachiosaurus', 'carnivore', 'Legendary'),
-(3, 'Mosasaurus', 'carnivore', 'Epic'),
-(4, 'Stegosaurus', 'carnivore', 'Rare'),
-(5, 'Elasmosaurus', 'carnivore', 'Epic'),
-(6, 'Pterodactyl', 'omnivore', 'Rare'),
-(7, 'Triceratops', 'herbivore', 'Common'),
-(8, 'Spinosaurus', 'omnivore', 'Common'),
-(9, 'Diplodocus', 'herbivore', 'Common'),
-(10, 'Velociraptor', 'omnivore', 'Common'),
-(11, 'Acanthopholis', 'herbivore', 'Epic'),
-(12, 'Parasaurolophus', 'herbivore', 'Rare');
-`;
+// Parse a single CSV line, handling quoted fields
+function parseCSVLine(line) {
+    const result = [];
+    let current = "";
+    let inQuotes = false;
 
-// Seed data for EggTypes (4 egg types based on user's image)
-const eggTypeData = `
-INSERT INTO EggType (name, rarity, price_points) VALUES
-('Common Egg', 'Common', 100),
-('Rare Egg', 'Rare', 150),
-('Epic Egg', 'Epic', 250),
-('Legendary Egg', 'Legendary', 400);
-`;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
 
-// Seed data for FoodTypes (6 food types based on user's image)
-const foodTypeData = `
-INSERT INTO FoodType (name, diet, xp_gain, price_points) VALUES
-('Raw Meat', 'carnivore', 35, 30),
-('Fresh Fish', 'carnivore', 60, 45),
-('Prime Steak', 'carnivore', 120, 80),
-('Leafy Green', 'herbivore', 35, 30),
-('Ancient Fern', 'herbivore', 60, 45),
-('Fruit Mix', 'herbivore', 120, 80);
-`;
-
-// Seed data for User (Admin/System user)
-const userData = `
-INSERT INTO User (username, email, password, points) VALUES
-('SystemAdmin', 'admin@dino.com', 'hashed_pass_placeholder', 1000);
-`;
-
-// Seed data for WellnessChallenges (sample challenges - linked to user 1)
-const sampleChallenges = `
-INSERT INTO WellnessChallenge (creator_id, description, points) VALUES
-(1, 'Walk 10,000 steps today', 50),
-(1, 'Drink 8 glasses of water', 30),
-(1, 'Get 8 hours of sleep', 40),
-(1, 'Do 30 minutes of exercise', 60),
-(1, 'Eat 5 servings of fruits/vegetables', 35);
-`;
-
-// Execute seeds
-async function runSeeds() {
-    try {
-        // Create user first to satisfy foreign key constraints
-        console.log("Seeding User...");
-        try {
-            await executeQuery(userData);
-            console.log("User seeded successfully!");
-        } catch (e) {
-            if (e.code === 'ER_DUP_ENTRY') {
-                console.log("User already exists, skipping...");
-            } else {
-                throw e;
-            }
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = "";
+        } else {
+            current += char;
         }
-
-        console.log("Seeding DinosaurDex...");
-        await executeQuery(dinosaurDexData);
-        console.log("DinosaurDex seeded successfully!");
-
-        console.log("Seeding EggTypes...");
-        await executeQuery(eggTypeData);
-        console.log("EggTypes seeded successfully!");
-
-        console.log("Seeding FoodTypes...");
-        await executeQuery(foodTypeData);
-        console.log("FoodTypes seeded successfully!");
-
-        console.log("Seeding Challenges...");
-        await executeQuery(sampleChallenges);
-        console.log("Challenges seeded successfully!");
-
-        console.log("\nAll seeds completed successfully!");
-
-        process.exit(0);
-    } catch (error) {
-        console.error("Seeding error:", error);
-        process.exit(1);
     }
+    result.push(current.trim());
+    return result;
 }
 
-function executeQuery(sql) {
-    return new Promise((resolve, reject) => {
-        pool.query(sql, (error, results) => {
-            if (error) {
-                reject(error);
+// Parse consolidated CSV file with table sections
+function parseConsolidatedCSV(filePath) {
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split(/\r?\n/);
+
+    const tables = {};
+    let currentTable = null;
+    let headers = null;
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+
+        // Skip empty lines
+        if (!trimmed) continue;
+
+        // Check for table marker
+        if (trimmed.startsWith("# TABLE:")) {
+            currentTable = trimmed.replace("# TABLE:", "").trim();
+            tables[currentTable] = [];
+            headers = null;
+            continue;
+        }
+
+        // Skip comment lines
+        if (trimmed.startsWith("#")) continue;
+
+        // Parse data lines
+        if (currentTable) {
+            if (!headers) {
+                // First line after table marker is headers
+                headers = parseCSVLine(trimmed);
             } else {
-                resolve(results);
+                // Data rows
+                const values = parseCSVLine(trimmed);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || "";
+                });
+                tables[currentTable].push(row);
             }
-        });
+        }
+    }
+
+    return tables;
+}
+
+// Helper to escape and quote SQL values
+function sqlValue(value) {
+    // Check if it's a number
+    if (value && /^\d+(\.\d+)?$/.test(value.trim())) {
+        return value.trim();
+    }
+    // String - escape single quotes and wrap in quotes
+    return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+// Generate INSERT SQL from CSV data
+function generateInsertSQL(tableName, data) {
+    if (data.length === 0) return "";
+
+    const columns = Object.keys(data[0]);
+    const valueRows = [];
+
+    for (const row of data) {
+        const values = columns.map(col => sqlValue(row[col]));
+        valueRows.push(`(${values.join(", ")})`);
+    }
+
+    return `INSERT INTO ${tableName} (${columns.join(", ")}) VALUES ${valueRows.join(", ")};`;
+}
+
+// Load consolidated CSV file
+const seedDataPath = path.join(__dirname, "seedData.csv");
+const allTables = parseConsolidatedCSV(seedDataPath);
+
+// Generate SQL for each table
+const userData = generateInsertSQL("User", allTables.User || []);
+const dinosaurDexData = generateInsertSQL("DinosaurDex", allTables.DinosaurDex || []);
+const eggTypeData = generateInsertSQL("EggType", allTables.EggType || []);
+const foodTypeData = generateInsertSQL("FoodType", allTables.FoodType || []);
+const sampleChallenges = generateInsertSQL("WellnessChallenge", allTables.WellnessChallenge || []);
+
+// Execute seeds using callbacks (no async/await)
+function runSeeds() {
+    console.log("Seeding User...");
+
+    pool.query(userData, (error, results) => {
+        if (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                console.log("User already exists, skipping...");
+                seedDinosaurDex();
+            } else {
+                console.error("User seeding error:", error);
+                process.exit(1);
+            }
+        } else {
+            console.log("User seeded successfully!");
+            seedDinosaurDex();
+        }
+    });
+}
+
+function seedDinosaurDex() {
+    console.log("\nSeeding DinosaurDex...");
+
+    pool.query(dinosaurDexData, (error, results) => {
+        if (error) {
+            console.error("DinosaurDex seeding error:", error);
+            process.exit(1);
+        } else {
+            console.log("DinosaurDex seeded successfully!");
+            seedEggTypes();
+        }
+    });
+}
+
+function seedEggTypes() {
+    console.log("\nSeeding EggTypes...");
+
+    pool.query(eggTypeData, (error, results) => {
+        if (error) {
+            console.error("EggTypes seeding error:", error);
+            process.exit(1);
+        } else {
+            console.log("EggTypes seeded successfully!");
+            seedFoodTypes();
+        }
+    });
+}
+
+function seedFoodTypes() {
+    console.log("\nSeeding FoodTypes...");
+
+    pool.query(foodTypeData, (error, results) => {
+        if (error) {
+            console.error("FoodTypes seeding error:", error);
+            process.exit(1);
+        } else {
+            console.log("FoodTypes seeded successfully!");
+            seedChallenges();
+        }
+    });
+}
+
+function seedChallenges() {
+    console.log("\nSeeding Challenges...");
+
+    pool.query(sampleChallenges, (error, results) => {
+        if (error) {
+            console.error("Challenges seeding error:", error);
+            process.exit(1);
+        } else {
+            console.log("Challenges seeded successfully!");
+            console.log("\nAll seeds completed successfully!");
+            process.exit(0);
+        }
     });
 }
 

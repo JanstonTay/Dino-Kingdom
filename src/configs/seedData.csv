@@ -1,0 +1,42 @@
+# TABLE: User
+username,email,password,points
+SystemAdmin,admin@dino.com,hashed_pass_placeholder,1000
+
+# TABLE: DinosaurDex
+number,name,diet,rarity
+1,Tyrannosaurus Rex,omnivore,Legendary
+2,Brachiosaurus,carnivore,Legendary
+3,Mosasaurus,carnivore,Epic
+4,Stegosaurus,carnivore,Rare
+5,Elasmosaurus,carnivore,Epic
+6,Pterodactyl,omnivore,Rare
+7,Triceratops,herbivore,Common
+8,Spinosaurus,omnivore,Common
+9,Diplodocus,herbivore,Common
+10,Velociraptor,omnivore,Common
+11,Acanthopholis,herbivore,Epic
+12,Parasaurolophus,herbivore,Rare
+
+# TABLE: EggType
+name,rarity,price_points
+Common Egg,Common,100
+Rare Egg,Rare,150
+Epic Egg,Epic,250
+Legendary Egg,Legendary,400
+
+# TABLE: FoodType
+name,diet,xp_gain,price_points
+Raw Meat,carnivore,35,30
+Fresh Fish,carnivore,60,45
+Prime Steak,carnivore,120,80
+Leafy Green,herbivore,35,30
+Ancient Fern,herbivore,60,45
+Fruit Mix,herbivore,120,80
+
+# TABLE: WellnessChallenge
+creator_id,description,points
+1,Walk 10000 steps today,50
+1,Drink 8 glasses of water,30
+1,Get 8 hours of sleep,40
+1,Do 30 minutes of exercise,60
+1,Eat 5 servings of fruits/vegetables,35
