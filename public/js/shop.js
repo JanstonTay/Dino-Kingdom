@@ -53,6 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchMethod(`/api/users/${userId}`, (status, data) => {
       if (status === 200) {
         pointsDisplay.textContent = data.points;
+      } else if (status === 404 && data.message === "User not found") {
+        console.warn("Session invalid: User not found. Redirecting to login.");
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_id");
+        window.location.href = "login.html";
       }
     });
   }
@@ -140,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         data-id="${itemId}" 
                         data-price="${price}"
                         data-name="${item.name}"
-                        style="width: 100%; height: 46px; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 12px; box-shadow: 0 4px 15px rgba(84, 250, 203, 0.3);">
+                        style="width: 100%; height: 46px; font-weight: 600; font-size: 0.95rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(84, 250, 203, 0.3);">
                         Buy Now
                     </button>
                 </div>
@@ -213,6 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'Buy Now';
         btn.disabled = false;
         qtyDisplay.textContent = '1'; // Reset quantity
+      } else if (status === 404 && response.message === "User not found") {
+        console.warn("Session invalid: User not found. Redirecting to login.");
+        alert("Your session has expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_id");
+        window.location.href = "login.html";
       } else {
         alert(`Purchase failed: ${getErrorMessage(response)}`);
         btn.textContent = 'Buy Now';

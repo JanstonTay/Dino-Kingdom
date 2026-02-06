@@ -77,6 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     showCreateFormBtn.parentElement.classList.remove('hidden');
                     createChallengeForm.reset();
                     loadChallenges(); // Refresh the list
+                } else if (status === 404 && result.message === "User not found") {
+                    console.warn("Session invalid: User not found. Redirecting to login.");
+                    alert("Your session has expired. Please login again.");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user_id");
+                    window.location.href = "login.html";
                 } else {
                     alert(`Failed to create challenge: ${getErrorMessage(result)}`);
                 }
@@ -129,6 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (status === 204) {
                 alert('Challenge deleted successfully!');
                 loadChallenges(); // Refresh the list
+            } else if (status === 404 && result.message === "User not found") {
+                console.warn("Session invalid: User not found. Redirecting to login.");
+                alert("Your session has expired. Please login again.");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user_id");
+                window.location.href = "login.html";
             } else {
                 alert(`Failed to delete challenge: ${getErrorMessage(result)}`);
             }
@@ -163,6 +175,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.textContent = 'Completed';
                 btn.classList.remove('btn-outline');
                 btn.classList.add('btn-primary');
+            } else if (status === 404 && result.message === "User not found") {
+                console.warn("Session invalid: User not found. Redirecting to login.");
+                alert("Your session has expired. Please login again.");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user_id");
+                window.location.href = "login.html";
             } else {
                 alert(`Submission failed: ${getErrorMessage(result)}`);
                 btn.disabled = false;
