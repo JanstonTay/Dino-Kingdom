@@ -201,6 +201,7 @@ module.exports.login = (req, res, next) => {
             });
         }
 
+        res.locals.userId = results[0].user_id;
         res.locals.hash = results[0].password;
         res.locals.message = "Login successful";
         next();

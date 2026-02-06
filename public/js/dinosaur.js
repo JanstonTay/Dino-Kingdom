@@ -43,7 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchMethod('/api/dinosaurs', (status, dinos) => {
             if (status === 200) {
                 // Filter client side
+                // Filter client side
                 const myDinos = dinos.filter(d => d.owner_id == userId);
+
+                const totalCount = myDinos.length;
+                const uniqueCount = new Set(myDinos.map(d => d.dex_num)).size;
+
+                renderStats(totalCount, uniqueCount);
                 renderDinos(myDinos);
             } else {
                 habitatGrid.innerHTML = '<p class="text-center text-muted" style="width: 100%; grid-column: 1/-1;">Failed to load dinosaurs.</p>';
@@ -198,5 +204,27 @@ document.addEventListener('DOMContentLoaded', () => {
         qtyInput.addEventListener("input", (e) => {
             qtyDisplay.textContent = e.target.value;
         });
+    }
+
+    function renderStats(total, unique) {
+        const banner = document.getElementById('statsBanner');
+        if (!banner) return;
+
+        const progressPercent = Math.min((unique / 12) * 100, 100);
+
+        banner.innerHTML = `
+            <div class="stat-item">
+                <div class="stat-value">${total}</div>
+                <div class="stat-label">Total Dinos</div>
+            </div>
+            <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.1);"></div>
+            <div class="stat-item" style="flex: 1.5;">
+                <div class="stat-value">${unique} / 12</div>
+                <div class="stat-label">Species Collected</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${progressPercent}%;"></div>
+                </div>
+            </div>
+        `;
     }
 });
