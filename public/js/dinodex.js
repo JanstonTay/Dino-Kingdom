@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dino.rarity === 'Legendary') rarityColor = '#ed8936';
 
             card.innerHTML = `
-                <div style="height: 200px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);">
-                    <img src="${imgPath}" alt="${dino.name}" style="width: 160px; height: 160px; object-fit: contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:4rem;\\'>🦕</span>';">
+                <div style="height: 240px; width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);">
+                    <img src="${imgPath}" alt="${dino.name}" style="width: 200px; height: 200px; object-fit: contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:4rem;\\'>🦕</span>';">
                 </div>
                 <h3 style="margin-bottom: 0.25rem;">${dino.name}</h3>
                 <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
