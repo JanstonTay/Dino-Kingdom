@@ -15,6 +15,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "init": "node src/configs/createSchema.js && node src/configs/initTables.js",
     "init_tables": "node src/configs/createSchema.js && node src/configs/initTables.js",
     "seed": "node src/configs/seedData.js",
     "start": "node index.js",
