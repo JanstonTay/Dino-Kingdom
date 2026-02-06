@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchMethod('/api/dinosaurs', (status, dinos) => {
             if (status === 200) {
                 // Filter client side
-                // Filter client side
                 const myDinos = dinos.filter(d => d.owner_id == userId);
 
                 const totalCount = myDinos.length;
