@@ -8,6 +8,7 @@ const setting = {
     user     : process.env.DB_USER, //get user from environment variable
     password : process.env.DB_PASSWORD, //get password from environment variable
     database : process.env.DB_DATABASE, //get database from environment variable
+    port     : process.env.DB_PORT || 3306,
     multipleStatements: true, //allow multiple sql statements
     dateStrings: true //return date as string instead of Date object
 }
