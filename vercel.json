@@ -1,9 +1,13 @@
 {
-  "experimentalServices": {
-    "web": {
-      "type": "web",
-      "entrypoint": ".",
-      "routePrefix": "/"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
     }
-  }
+  ]
 }

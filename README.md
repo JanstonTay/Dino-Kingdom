@@ -126,7 +126,7 @@ This project is ready to deploy on Vercel as an Express application. The server 
 - `Dockerfile` — container build instructions
 - `.dockerignore` — files to exclude from Docker builds
 - `Procfile` — `npm start` command for platforms that use a Procfile
-- `vercel.json` — Vercel Express service configuration
+- `api/index.js` and `vercel.json` — Vercel function and routing configuration
 
 Vercel does not require the Dockerfile or Procfile for this project, but they can stay in the repo for other hosts.
 
@@ -134,7 +134,7 @@ Vercel does not require the Dockerfile or Procfile for this project, but they ca
 1. Push this repository to GitHub.
 2. Create a Vercel account and import the GitHub repository.
 3. Keep the default project settings:
-   - Framework Preset: `Services` if Vercel detects the Express app, otherwise `Other`
+   - Framework Preset: `Other`
    - Install Command: `npm install`
    - Build Command: leave empty
    - Output Directory: leave empty
