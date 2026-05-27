@@ -117,6 +117,39 @@ npm run dev
 
 ---
 
+## 🚀 Deployment
+
+This project can be deployed to a container-friendly host such as Railway or Fly.io.
+
+### Files added for deployment
+- `.env.example` — sample environment variables
+- `Dockerfile` — container build instructions
+- `.dockerignore` — files to exclude from Docker builds
+- `Procfile` — `npm start` command for platforms that use a Procfile
+
+### Recommended deployment steps
+1. Push this repository to GitHub.
+2. Create a Railway or Fly.io account.
+3. Connect the repo and set the service command:
+   - `npm install`
+   - `npm start`
+4. Add environment variables from `.env.example` to the platform dashboard.
+5. Deploy and test the app.
+
+### Required environment variables
+```
+DB_HOST=
+DB_PORT=3306
+DB_USER=
+DB_PASSWORD=
+DB_DATABASE=
+JWT_SECRET_KEY=
+JWT_EXPIRES_IN=15m
+JWT_ALGORITHM=HS256
+```
+
+> On Railway, also add a MySQL plugin and use the generated database credentials.
+
 
 🎯 Project Purpose and Scope
 _______________________________
