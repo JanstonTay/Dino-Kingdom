@@ -119,22 +119,30 @@ npm run dev
 
 ## 🚀 Deployment
 
-This project can be deployed to a container-friendly host such as Railway or Fly.io.
+This project is ready to deploy on Vercel as an Express application. The server app is exported from `src/app.js`, which is one of Vercel's supported Express entrypoint locations, and the frontend assets already live in `public/`, which Vercel serves as static files.
 
-### Files added for deployment
+### Existing deployment files
 - `.env.example` — sample environment variables
 - `Dockerfile` — container build instructions
 - `.dockerignore` — files to exclude from Docker builds
 - `Procfile` — `npm start` command for platforms that use a Procfile
 
-### Recommended deployment steps
+Vercel does not require the Dockerfile or Procfile for this project, but they can stay in the repo for other hosts.
+
+### Vercel deployment steps
 1. Push this repository to GitHub.
-2. Create a Railway or Fly.io account.
-3. Connect the repo and set the service command:
-   - `npm install`
-   - `npm start`
-4. Add environment variables from `.env.example` to the platform dashboard.
-5. Deploy and test the app.
+2. Create a Vercel account and import the GitHub repository.
+3. Keep the default project settings:
+   - Framework Preset: `Other`
+   - Install Command: `npm install`
+   - Build Command: leave empty
+   - Output Directory: leave empty
+4. Add environment variables from `.env.example` in Vercel under Project Settings > Environment Variables.
+5. Deploy the project.
+6. Visit `/api/health` on the Vercel URL. A successful deployment returns:
+   ```json
+   { "status": "ok" }
+   ```
 
 ### Required environment variables
 ```
@@ -148,7 +156,15 @@ JWT_EXPIRES_IN=15m
 JWT_ALGORITHM=HS256
 ```
 
-> On Railway, also add a MySQL plugin and use the generated database credentials.
+For hosted MySQL providers that give a connection string, you can use `DATABASE_URL` instead of the separate `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_DATABASE` values.
+
+```
+DATABASE_URL=mysql://user:password@host:3306/database
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=true
+```
+
+Important: Vercel cannot connect to a MySQL server running on your own computer at `127.0.0.1`. Use a hosted MySQL database that allows external connections, then run `npm run init` and `npm run seed` locally with those hosted database credentials before deploying.
 
 
 🎯 Project Purpose and Scope

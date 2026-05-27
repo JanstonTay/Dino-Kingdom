@@ -18,9 +18,9 @@ app.use(express.urlencoded({extended:false}));
 // SETUP ROUTES
 //////////////////////////////////////////////////////
 
-// app.get('/', (req, res) => {
-//     res.send('I am Alive!');
-// })
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 const mainRoutes = require('./routes/mainRoutes');
 app.use("/api", mainRoutes);
